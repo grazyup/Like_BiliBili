@@ -24,7 +24,7 @@ public class GlobalExceptionHandler {
 
     /**
      * 捕获异常信息
-     * @return 响应JSON信息到前端
+     * @return 将JSON格式的异常信息响应到前端
      */
     @ResponseBody
     @ExceptionHandler(Exception.class)
