@@ -29,5 +29,13 @@ public interface userService {
      * 登录
      * @param user 登录对象
      */
-    String login(User user);
+    String login(User user) throws Exception;
+
+
+    /**
+     * 根据id获取用户信息
+     * @param currentUserId 当前用户id
+     * @return 用户和用户基本信息表数据
+     */
+    User getUserInfoById(Long currentUserId);
 }

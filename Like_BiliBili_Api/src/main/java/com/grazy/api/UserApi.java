@@ -3,12 +3,10 @@ package com.grazy.api;
 import com.grazy.Service.userService;
 import com.grazy.domain.ResultResponse;
 import com.grazy.domain.User;
+import com.grazy.support.userSupport;
 import com.grazy.utils.RSAUtil;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * @Author: grazy
@@ -21,6 +19,9 @@ public class UserApi {
 
     @Autowired
     private userService userService;
+
+    @Autowired
+    private userSupport userSupport;
 
 
     /**
@@ -46,9 +47,21 @@ public class UserApi {
     /**
      * 登录
      */
-    @GetMapping("/user-token")
-    public ResultResponse<String> login(@RequestBody User user){
+    @GetMapping("/users-token")
+    public ResultResponse<String> login(@RequestBody User user) throws Exception{
         return ResultResponse.success("登录成功",userService.login(user));
     }
 
+
+    /**
+     * 根据id获取用户信息
+     * @return 用户信息
+     */
+    @GetMapping("/users")
+    public ResultResponse<User> getUserInfo(){
+        //通过token获取用户参数
+        Long currentUserId = userSupport.getCurrentUserId();
+        User user = userService.getUserInfoById(currentUserId);
+        return ResultResponse.success("获取成功", user);
+    }
 }

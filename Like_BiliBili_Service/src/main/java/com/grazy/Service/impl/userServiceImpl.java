@@ -8,6 +8,7 @@ import com.grazy.domain.UserInfo;
 import com.grazy.mapper.UserMapper;
 import com.grazy.utils.MD5Util;
 import com.grazy.utils.RSAUtil;
+import com.grazy.utils.TokenUtil;
 import com.mysql.cj.util.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -64,7 +65,7 @@ public class userServiceImpl implements userService {
 
 
     @Override
-    public String login(User user) {
+    public String login(User user) throws Exception{
         //数据库存储的用户
         User dbUser = getUserByPhone(user.getPhone());
         if(StringUtils.isNullOrEmpty(user.getPhone())){
@@ -79,7 +80,7 @@ public class userServiceImpl implements userService {
         String rawPassword = null;
         try {
             //RSA解密
-            rawPassword = RSAUtil.decrypt(user.getPhone());
+            rawPassword = RSAUtil.decrypt(user.getPassword());
         } catch (Exception e) {
             throw new CustomException("密码RSA解密失败！");
         }
@@ -89,7 +90,18 @@ public class userServiceImpl implements userService {
         if(!dbUser.getPassword().equals(MDPassword)){
             throw new CustomException("密码错误！");
         }
-        return null;
+        return TokenUtil.generateToken(dbUser.getId());
+    }
+
+
+    @Override
+    public User getUserInfoById(Long currentUserId) {
+        //获取用户账号数据
+        User user = userMapper.selectUserById(currentUserId);
+        //获取用户基本信息
+        UserInfo userInfo = userMapper.selectUserInfoById(currentUserId);
+        user.setUserInfo(userInfo);
+        return user;
     }
 
 

@@ -18,4 +18,8 @@ public interface UserMapper {
     void addUser(User user);
 
     void addUserInfo(UserInfo userInfo);
+
+    User selectUserById(Long currentUserId);
+
+    UserInfo selectUserInfoById(Long currentUserId);
 }

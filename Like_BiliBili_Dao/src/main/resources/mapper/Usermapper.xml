@@ -9,6 +9,7 @@
         select * from t_user where phone = #{phone}
     </select>
 
+
     <insert id="addUser" useGeneratedKeys="true" keyProperty="id">
         insert into t_user(phone,
                            email,
@@ -41,5 +42,16 @@
                      #{createTime}
                  )
     </insert>
+
+
+    <select id="selectUserById" resultType="com.grazy.domain.User">
+        select * from t_user where id = #{id}
+    </select>
+
+    <select id="selectUserInfoById" resultType="com.grazy.domain.UserInfo">
+        select * from t_user_info where userid = #{id}
+    </select>
+
+
 
 </mapper>
