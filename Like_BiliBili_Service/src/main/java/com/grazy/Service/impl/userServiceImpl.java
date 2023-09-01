@@ -30,15 +30,18 @@ public class userServiceImpl implements userService {
 
     @Override
     public void sigIn(User user) {
-        //获取注册的手机号
-        String phone = user.getPhone();
-        if(StringUtils.isNullOrEmpty(phone)){
-            //电话号码为空，抛异常
-            throw new CustomException("电话号码为空！");
+        User dbUser = null;
+        //判断用户是使用手机号注册还是邮箱注册
+        if(!StringUtils.isNullOrEmpty(user.getPhone())){
+            dbUser = getUserByPhone(user.getPhone());
+        }else if(!StringUtils.isNullOrEmpty(user.getEmail())){
+            dbUser = getUserByPhone(user.getEmail());
+        }else{
+            throw new CustomException("账号不能为空！");
         }
         //判断该号码是否被注册
-        if(getUserByPhone(phone) != null){
-            throw new CustomException("此号码已被注册！");
+        if(dbUser != null){
+            throw new CustomException("该用户已被注册！");
         }
         String rawPassword;  //原始密码
         try {
@@ -66,11 +69,14 @@ public class userServiceImpl implements userService {
 
     @Override
     public String login(User user) throws Exception{
-        //数据库存储的用户
-        User dbUser = getUserByPhone(user.getPhone());
-        if(StringUtils.isNullOrEmpty(user.getPhone())){
-            //手机号码为空
-            throw new CustomException("手机号码为空");
+        User dbUser = null;
+        //判断用户是使用电话号码还是邮箱登录
+        if(!StringUtils.isNullOrEmpty(user.getPhone())){
+            dbUser = getUserByPhone(user.getPhone());
+        }else if(!StringUtils.isNullOrEmpty(user.getEmail())){
+            dbUser = getUserByEmail(user.getEmail());
+        }else{
+            throw new CustomException("账号不能为空!");
         }
         if(dbUser == null){
             //未注册
@@ -93,6 +99,17 @@ public class userServiceImpl implements userService {
         return TokenUtil.generateToken(dbUser.getId());
     }
 
+    @Override
+    public User getUserByEmail(String email) {
+        return userMapper.getUserByEmail(email);
+    }
+
+
+    @Override
+    public User getUserByPhone(String phone) {
+        return userMapper.getUserByPhone(phone);
+    }
+
 
     @Override
     public User getUserInfoById(Long currentUserId) {
@@ -106,8 +123,29 @@ public class userServiceImpl implements userService {
 
 
     @Override
-    public User getUserByPhone(String phone) {
-        return userMapper.getUserByPhone(phone);
+    public void updateUserInfo(UserInfo userInfo, Long userId){
+        //设置更改时间
+        userInfo.setUpdateTime(new Date());
+        if(userMapper.updateUserInfoById(userId, userInfo) == 0){
+            throw new CustomException("用户基本信息修改失败！");
+        }
+    }
+
+
+    @Override
+    public void updateUser(User user, Long currentUserId) throws Exception {
+        user.setUpdateTime(new Date());
+        User dbUser = userMapper.selectUserById(currentUserId);
+        if(dbUser == null) throw new CustomException("用户不存在！");
+        if(!StringUtils.isNullOrEmpty(user.getPassword())){
+            //当前涉及修改密码
+            String rawPassword = RSAUtil.decrypt(user.getPassword());
+            String MdPassword = MD5Util.sign(rawPassword, dbUser.getSalt(), "UTF-8");
+            user.setPassword(MdPassword);
+        }
+        if(userMapper.updateUserById(currentUserId, user) == 0){
+            throw new CustomException("用户账号信息修改失败！");
+        }
     }
 
 

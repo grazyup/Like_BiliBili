@@ -3,6 +3,7 @@ package com.grazy.api;
 import com.grazy.Service.userService;
 import com.grazy.domain.ResultResponse;
 import com.grazy.domain.User;
+import com.grazy.domain.UserInfo;
 import com.grazy.support.userSupport;
 import com.grazy.utils.RSAUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,13 +30,14 @@ public class UserApi {
      */
     @GetMapping("/rsa-pks")
     public ResultResponse<String> getPublicKey(){
-        return ResultResponse.success("获取成功", RSAUtil.getPublicKeyStr());
+        String publicKeyStr = RSAUtil.getPublicKeyStr();
+        return ResultResponse.success("公钥获取成功",publicKeyStr);
     }
 
 
     /**
      * 注册
-     * @return
+     * @return 响应数据
      */
     @PostMapping("/users")
     public ResultResponse<String> SignIn(@RequestBody User user){
@@ -46,10 +48,13 @@ public class UserApi {
 
     /**
      * 登录
+     * @param user 账号密码存储用户对象
+     * @return token
+     * @throws Exception 异常
      */
-    @GetMapping("/users-token")
+    @GetMapping("/user-tokens")
     public ResultResponse<String> login(@RequestBody User user) throws Exception{
-        return ResultResponse.success("登录成功",userService.login(user));
+        return ResultResponse.success("token登录成功",userService.login(user));
     }
 
 
@@ -63,5 +68,32 @@ public class UserApi {
         Long currentUserId = userSupport.getCurrentUserId();
         User user = userService.getUserInfoById(currentUserId);
         return ResultResponse.success("获取成功", user);
+    }
+
+
+    /**
+     * 更新用户基本信息
+     * @param userInfo 更新后的基本信息对象
+     * @return 响应数据
+     */
+    @PutMapping("/user-infos")
+    public ResultResponse<String> updateUserInfos(@RequestBody UserInfo userInfo){
+        //通过token解析获取userId,避免被仿照id调用接口
+        userService.updateUserInfo(userInfo,userSupport.getCurrentUserId());
+        return ResultResponse.success("信息修改成功！");
+    }
+
+
+    /**
+     * 更新用户账户信息
+     * @param user 携带新数据的用户对象
+     * @return 响应结果
+     */
+    @PutMapping("/users")
+    public ResultResponse<String> updateUser(@RequestBody User user) throws Exception{
+        //token解析出userid
+        Long currentUserId = userSupport.getCurrentUserId();
+        userService.updateUser(user,currentUserId);
+        return ResultResponse.success("更新成功！");
     }
 }
