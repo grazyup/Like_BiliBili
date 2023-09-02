@@ -9,7 +9,7 @@ import com.grazy.domain.UserInfo;
  * @Description:
  */
 
-public interface userService {
+public interface UserService {
 
     /**
      * 注册用户

@@ -2,3 +2,11 @@ mybatis:
   mapper-locations: classpath*:/mapper/**/*.xml
 server:
   port: 9090
+
+
+#配置日志信息到本地磁盘
+logging:
+  file:
+    name: D:/java_SpringBoot/Project/Like_BiliBili_log
+  level:
+    com.grazy.mapper: debug

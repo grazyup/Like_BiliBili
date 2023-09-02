@@ -2,7 +2,7 @@ package com.grazy.Service.impl;
 
 import com.grazy.Common.UserConstant;
 import com.grazy.Exception.CustomException;
-import com.grazy.Service.userService;
+import com.grazy.Service.UserService;
 import com.grazy.domain.User;
 import com.grazy.domain.UserInfo;
 import com.grazy.mapper.UserMapper;
@@ -22,7 +22,7 @@ import java.util.Date;
  */
 
 @Service
-public class userServiceImpl implements userService {
+public class userServiceImpl implements UserService {
 
     @Autowired
     private UserMapper userMapper;

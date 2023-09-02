@@ -1,6 +1,6 @@
 package com.grazy.api;
 
-import com.grazy.Service.userService;
+import com.grazy.Service.UserService;
 import com.grazy.domain.ResultResponse;
 import com.grazy.domain.User;
 import com.grazy.domain.UserInfo;
@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 public class UserApi {
 
     @Autowired
-    private userService userService;
+    private UserService userService;
 
     @Autowired
     private userSupport userSupport;
@@ -96,4 +96,7 @@ public class UserApi {
         userService.updateUser(user,currentUserId);
         return ResultResponse.success("更新成功！");
     }
+
+
+
 }
