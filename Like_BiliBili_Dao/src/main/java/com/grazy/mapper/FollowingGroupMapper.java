@@ -1,6 +1,10 @@
 package com.grazy.mapper;
 
+import com.grazy.domain.FollowingGroup;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 /**
  * @Author: grazy
@@ -11,4 +15,11 @@ import org.apache.ibatis.annotations.Mapper;
 @Mapper
 public interface FollowingGroupMapper{
 
+    FollowingGroup selectGroupById(Long id);
+
+    List<FollowingGroup> selectGroupByUserId(Long currentUserId);
+
+    FollowingGroup selectGroupByType(@Param("groupType") Long type);
+
+    Long insertFollowingGroup(FollowingGroup followingGroup);
 }

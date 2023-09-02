@@ -5,6 +5,9 @@ import com.grazy.domain.UserInfo;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.List;
+import java.util.Set;
+
 /**
  * @Author: grazy
  * @Date: 2023/8/29 20:41
@@ -22,7 +25,7 @@ public interface UserMapper {
 
     User selectUserById(Long currentUserId);
 
-    UserInfo selectUserInfoById(Long currentUserId);
+    List<UserInfo> selectUserInfoById(Set<Long> Ids);
 
     Integer updateUserInfoById(@Param("userId") Long userId, @Param("userInfo") UserInfo userInfo);
 

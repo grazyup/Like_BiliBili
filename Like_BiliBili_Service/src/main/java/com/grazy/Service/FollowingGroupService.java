@@ -2,6 +2,8 @@ package com.grazy.Service;
 
 import com.grazy.domain.FollowingGroup;
 
+import java.util.List;
+
 /**
  * @Author: grazy
  * @Date: 2023/9/2 14:26
@@ -15,7 +17,7 @@ public interface FollowingGroupService {
      * @param type 分组类型
      * @return 分组信息
      */
-    FollowingGroup selectGroupByType(String type);
+    FollowingGroup selectGroupByType(Long type);
 
 
     /**
@@ -24,4 +26,20 @@ public interface FollowingGroupService {
      * @return 分组信息
      */
     FollowingGroup selectGroupById(Long Id);
+
+
+    /**
+     * 获取用户分组数据
+     * @param currentUserId 当前用户id
+     * @return 分组集合
+     */
+    List<FollowingGroup> selectGroupByUserId(Long currentUserId);
+
+
+    /**
+     * 新增关注分组
+     * @param followingGroup 新的分组对象信息
+     * @return 分组id
+     */
+    Long insertFollowingGroup(FollowingGroup followingGroup);
 }

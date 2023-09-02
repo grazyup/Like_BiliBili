@@ -3,6 +3,9 @@ package com.grazy.Service;
 import com.grazy.domain.User;
 import com.grazy.domain.UserInfo;
 
+import java.util.List;
+import java.util.Set;
+
 /**
  * @Author: grazy
  * @Date: 2023/8/29 20:36
@@ -47,7 +50,7 @@ public interface UserService {
      * @param currentUserId 当前用户id
      * @return 用户和用户基本信息表数据
      */
-    User getUserInfoById(Long currentUserId);
+    User getUserDateById(Long currentUserId);
 
 
     /**
@@ -60,7 +63,14 @@ public interface UserService {
     /**
      * 更新用户账户信息
      * @param user 携带新数据的用户对象
-     * @return 响应结果
      */
     void updateUser(User user, Long currentUserId) throws Exception;
+
+
+    /**
+     * 获取用户info
+     * @param ids id
+     * @return 用户信息
+     */
+    List<UserInfo> selectUserInfoBy(Set<Long> ids);
 }

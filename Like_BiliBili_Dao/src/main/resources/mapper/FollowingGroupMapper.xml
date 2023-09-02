@@ -5,4 +5,32 @@
 
 <mapper namespace="com.grazy.mapper.FollowingGroupMapper">
 
+    <select id="selectGroupById" resultType="com.grazy.domain.FollowingGroup">
+        select * from t_following_group where id = #{id}
+    </select>
+
+
+    <select id="selectGroupByUserId" resultType="com.grazy.domain.FollowingGroup">
+        select * from t_following_group where userId = #{currentUserId} or 'type' in (0,1,2)
+    </select>
+
+    <select id="selectGroupByType" resultType="com.grazy.domain.FollowingGroup">
+        select * from t_following_group where type = #{groupType}
+    </select>
+
+    <insert id="insertFollowingGroup" useGeneratedKeys="true" keyProperty="id">
+        insert into
+            t_following_group(
+            userId,
+            name,
+            type,
+            createTime
+        ) values (
+            #{userId},
+            #{name},
+            #{type},
+            #{createTime}
+        )
+    </insert>
+
 </mapper>

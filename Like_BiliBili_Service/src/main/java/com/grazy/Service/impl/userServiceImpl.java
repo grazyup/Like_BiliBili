@@ -13,7 +13,7 @@ import com.mysql.cj.util.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
+import java.util.*;
 
 /**
  * @Author: grazy
@@ -112,12 +112,12 @@ public class userServiceImpl implements UserService {
 
 
     @Override
-    public User getUserInfoById(Long currentUserId) {
+    public User getUserDateById(Long currentUserId) {
         //获取用户账号数据
         User user = userMapper.selectUserById(currentUserId);
         //获取用户基本信息
-        UserInfo userInfo = userMapper.selectUserInfoById(currentUserId);
-        user.setUserInfo(userInfo);
+        List<UserInfo> userInfoList = userMapper.selectUserInfoById(new HashSet<Long>(){{add(currentUserId);}});
+        user.setUserInfo(userInfoList.get(0));
         return user;
     }
 
@@ -146,6 +146,11 @@ public class userServiceImpl implements UserService {
         if(userMapper.updateUserById(currentUserId, user) == 0){
             throw new CustomException("用户账号信息修改失败！");
         }
+    }
+
+    @Override
+    public List<UserInfo> selectUserInfoBy(Set<Long> ids) {
+        return userMapper.selectUserInfoById(ids);
     }
 
 

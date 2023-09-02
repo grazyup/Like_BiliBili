@@ -25,7 +25,7 @@ public class FollowingGroup {
     /**
      * 关注分组类型：0：特别关注，1：悄悄关注，2：默认关注，3：自定义关注
      */
-    private String type;
+    private Long type;
 
     private Date createTime;
 

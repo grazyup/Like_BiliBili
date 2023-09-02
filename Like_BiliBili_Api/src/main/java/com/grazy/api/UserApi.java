@@ -66,7 +66,7 @@ public class UserApi {
     public ResultResponse<User> getUserInfo(){
         //通过token获取用户参数
         Long currentUserId = userSupport.getCurrentUserId();
-        User user = userService.getUserInfoById(currentUserId);
+        User user = userService.getUserDateById(currentUserId);
         return ResultResponse.success("获取成功", user);
     }
 

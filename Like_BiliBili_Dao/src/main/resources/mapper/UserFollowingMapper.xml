@@ -31,4 +31,14 @@
         delete from t_user_following where followingId = #{followingId}
     </delete>
 
+
+    <select id="selectFollowersById" resultType="com.grazy.domain.UserFollowing">
+        select * from t_user_following where userId = #{currentUserId}
+    </select>
+
+
+    <select id="selectFansByCurrentUserId" resultType="com.grazy.domain.UserFollowing">
+        select * from t_user_following where followingId = #{currentUserId}
+    </select>
+
 </mapper>

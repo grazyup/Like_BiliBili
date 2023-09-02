@@ -48,8 +48,17 @@
         select * from t_user where id = #{id}
     </select>
 
+
     <select id="selectUserInfoById" resultType="com.grazy.domain.UserInfo">
-        select * from t_user_info where userid = #{id}
+        select * from t_user_info
+            <where>
+                <if test="Ids != null and Ids.size > 0">
+                    userId in
+                    <foreach collection="Ids" item="userId" open="(" close=")" index="index" separator=",">
+                        #{userId}
+                    </foreach>
+                </if>
+            </where>
     </select>
 
 
