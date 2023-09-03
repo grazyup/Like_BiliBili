@@ -1,9 +1,9 @@
 package com.grazy.api;
 
+import com.alibaba.fastjson.JSONObject;
+import com.grazy.Service.UserFollowingService;
 import com.grazy.Service.UserService;
-import com.grazy.domain.ResultResponse;
-import com.grazy.domain.User;
-import com.grazy.domain.UserInfo;
+import com.grazy.domain.*;
 import com.grazy.support.userSupport;
 import com.grazy.utils.RSAUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +23,9 @@ public class UserApi {
 
     @Autowired
     private userSupport userSupport;
+
+    @Autowired
+    private UserFollowingService userFollowingService;
 
 
     /**
@@ -97,6 +100,32 @@ public class UserApi {
         return ResultResponse.success("更新成功！");
     }
 
+
+    /**
+     * 分页查询用户信息
+     * @param current 当前页码
+     * @param size 每页展示的条数
+     * @param conditionNick 昵称查询条件
+     * @return 用户信息集合
+     */
+    @GetMapping("/page-users")
+    public ResultResponse<PageResult<UserInfo>> pageListUserInfo(@RequestParam(defaultValue = "1") Integer current,
+                                                                 @RequestParam(defaultValue = "10") Integer size,
+                                                                 String conditionNick){
+        //fastJson依赖提供实现map的一个类
+        JSONObject params = new JSONObject();
+        Long currentUserId = userSupport.getCurrentUserId();
+        params.put("current",current);
+        params.put("size",size);
+        params.put("condition",conditionNick);
+        params.put("userId",currentUserId);
+        PageResult<UserInfo> result = userService.pageListUserInfo(params);
+        //判断搜索出来的用户与当前账户是否互相关注
+        if (result.getTotal() > 0) {
+            result.setRecords(userFollowingService.checkFollowingStatus(result.getRecords(),currentUserId));
+        }
+        return ResultResponse.success("查询成功！",result);
+    }
 
 
 }

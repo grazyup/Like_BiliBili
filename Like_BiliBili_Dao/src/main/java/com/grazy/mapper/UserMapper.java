@@ -1,11 +1,13 @@
 package com.grazy.mapper;
 
+import com.alibaba.fastjson.JSONObject;
 import com.grazy.domain.User;
 import com.grazy.domain.UserInfo;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -32,4 +34,8 @@ public interface UserMapper {
     Integer updateUserById(@Param("userId") Long currentUserId, @Param("user") User user);
 
     User getUserByEmail(String email);
+
+    Integer pageCountUserInfo(Map<String,Object> params);
+
+    List<UserInfo> pageListUserInfo(Map<String,Object> params);
 }

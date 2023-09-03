@@ -29,7 +29,7 @@ public interface FollowingGroupService {
 
 
     /**
-     * 获取用户分组数据
+     * 获取用户关注分组数据列表
      * @param currentUserId 当前用户id
      * @return 分组集合
      */

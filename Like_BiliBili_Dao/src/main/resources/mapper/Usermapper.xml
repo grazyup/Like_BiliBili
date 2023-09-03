@@ -112,4 +112,33 @@
     </select>
 
 
+    <select id="pageCountUserInfo" resultType="java.lang.Integer">
+        select
+            COUNT(1)
+        from
+            t_user_info
+        <where>
+            <if test="condition != null and condition != '' ">
+                nick like concat('%',#{condition}, '%')
+            </if>
+        </where>
+        order by id desc
+    </select>
+
+
+    <select id="pageListUserInfo" resultType="com.grazy.domain.UserInfo">
+        select
+            *
+        from
+            t_user_info
+        <where>
+            <if test="condition != null and condition != '' ">
+                nick like concat('%',#{condition}, '%')
+            </if>
+        </where>
+        order by id desc
+        limit #{startNumber},#{limit}
+    </select>
+
+
 </mapper>

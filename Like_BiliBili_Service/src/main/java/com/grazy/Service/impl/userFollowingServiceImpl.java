@@ -138,7 +138,6 @@ public class userFollowingServiceImpl implements UserFollowingService {
                     fans.setUserInfo(fansInfo);
                 }
             }
-
             //判断是否互相关注
             for(UserFollowing userFollower: userFollowerList){
                 if(userFollower.getFollowingId().equals(fans.getUserId())){
@@ -148,5 +147,23 @@ public class userFollowingServiceImpl implements UserFollowingService {
             }
         }
         return fansList;
+    }
+
+
+    @Override
+    public List<UserInfo> checkFollowingStatus(List<UserInfo> records, Long currentUserId) {
+        //查询当前用户的关注信息
+        List<UserFollowing> userFollowings = userFollowingMapper.selectFollowersById(currentUserId);
+        for(UserInfo userInfo: records){
+            //将查询的用户关注属性全部设置为false
+            userInfo.setFollowed(false);
+            for(UserFollowing userFollowing: userFollowings){
+                if(userInfo.getUserId().equals(userFollowing.getFollowingId())){
+                    //找到的用户与当前用户存在相互关注
+                    userInfo.setFollowed(true);
+                }
+            }
+        }
+        return records;
     }
 }

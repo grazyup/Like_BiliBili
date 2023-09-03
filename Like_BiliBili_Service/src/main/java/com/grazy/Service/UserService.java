@@ -1,5 +1,7 @@
 package com.grazy.Service;
 
+import com.alibaba.fastjson.JSONObject;
+import com.grazy.domain.PageResult;
 import com.grazy.domain.User;
 import com.grazy.domain.UserInfo;
 
@@ -73,4 +75,12 @@ public interface UserService {
      * @return 用户信息
      */
     List<UserInfo> selectUserInfoBy(Set<Long> ids);
+
+
+    /**
+     * 分页查询用户信息
+     * @param params 封装的分页查询参数对象
+     * @return 分页用户数据
+     */
+    PageResult<UserInfo> pageListUserInfo(JSONObject params);
 }

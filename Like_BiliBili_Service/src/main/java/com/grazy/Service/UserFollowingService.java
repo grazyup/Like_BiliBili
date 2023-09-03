@@ -2,6 +2,7 @@ package com.grazy.Service;
 
 import com.grazy.domain.FollowingGroup;
 import com.grazy.domain.UserFollowing;
+import com.grazy.domain.UserInfo;
 
 import java.util.List;
 
@@ -37,4 +38,13 @@ public interface UserFollowingService {
      * @return 粉丝信息列表
      */
     List<UserFollowing> getFansInfo(Long currentUserId);
+
+
+    /**
+     * 判断是否关注了其中的某些用户
+     * @param records 用户列表
+     * @param currentUserId 当前用户id
+     * @return 用户列表
+     */
+    List<UserInfo> checkFollowingStatus(List<UserInfo> records, Long currentUserId);
 }

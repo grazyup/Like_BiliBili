@@ -1,8 +1,10 @@
 package com.grazy.Service.impl;
 
+import com.alibaba.fastjson.JSONObject;
 import com.grazy.Common.UserConstant;
 import com.grazy.Exception.CustomException;
 import com.grazy.Service.UserService;
+import com.grazy.domain.PageResult;
 import com.grazy.domain.User;
 import com.grazy.domain.UserInfo;
 import com.grazy.mapper.UserMapper;
@@ -148,9 +150,25 @@ public class userServiceImpl implements UserService {
         }
     }
 
+
+
     @Override
     public List<UserInfo> selectUserInfoBy(Set<Long> ids) {
         return userMapper.selectUserInfoById(ids);
+    }
+
+
+    @Override
+    public PageResult<UserInfo> pageListUserInfo(JSONObject params) {
+        //设置查询起始位置
+        params.put("startNumber",(params.getInteger("current")-1) * params.getInteger("size"));
+        params.put("limit",params.getInteger("size"));
+        Integer total = userMapper.pageCountUserInfo(params);
+        List<UserInfo> records = new ArrayList<>();
+        if(total > 0){
+            records = userMapper.pageListUserInfo(params);
+        }
+        return new PageResult<>(total,records);
     }
 
 

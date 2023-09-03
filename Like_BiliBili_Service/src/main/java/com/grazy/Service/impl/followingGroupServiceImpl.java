@@ -39,7 +39,7 @@ public class followingGroupServiceImpl implements FollowingGroupService {
 
     @Override
     public Long insertFollowingGroup(FollowingGroup followingGroup) {
-        followingGroup.setName(followingGroup.getUserId() + "的新建分组" + new Date().getTime());
+        followingGroup.setName(followingGroup.getUserId() + "的新建分组" + new Date().getMonth() + new Date().getDate());
         followingGroup.setCreateTime(new Date());
         followingGroup.setType(UserConstant.USER_FOLLOWING_GROUP_TYPE_USER);
         //插入数据库
