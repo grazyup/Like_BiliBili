@@ -3,7 +3,7 @@ package com.grazy.api;
 import com.grazy.Service.FollowingGroupService;
 import com.grazy.Service.UserFollowingService;
 import com.grazy.domain.*;
-import com.grazy.support.userSupport;
+import com.grazy.support.UserSupport;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,7 +25,7 @@ public class FollowingApi {
     private UserFollowingService userFollowingService;
 
     @Autowired
-    private userSupport support;
+    private UserSupport support;
 
     @Autowired
     private FollowingGroupService followingGroupService;

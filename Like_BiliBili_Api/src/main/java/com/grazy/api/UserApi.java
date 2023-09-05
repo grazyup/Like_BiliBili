@@ -4,7 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.grazy.Service.UserFollowingService;
 import com.grazy.Service.UserService;
 import com.grazy.domain.*;
-import com.grazy.support.userSupport;
+import com.grazy.support.UserSupport;
 import com.grazy.utils.RSAUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -22,7 +22,7 @@ public class UserApi {
     private UserService userService;
 
     @Autowired
-    private userSupport userSupport;
+    private UserSupport userSupport;
 
     @Autowired
     private UserFollowingService userFollowingService;

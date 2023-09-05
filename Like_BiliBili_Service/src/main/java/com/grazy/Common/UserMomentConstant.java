@@ -10,4 +10,6 @@ public class UserMomentConstant {
     public static final String GROUP_MOMENTS = "MomentsGroup";
 
     public static final String TOPIC_MOMENTS = "TopicMoments";
+
+    public static final String DEFAULT_MOMENTS_TYPE = "0";
 }

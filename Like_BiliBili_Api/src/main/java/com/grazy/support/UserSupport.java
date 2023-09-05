@@ -13,7 +13,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
  */
 
 @Component
-public class userSupport {
+public class UserSupport {
 
     /**
      * 根据token解析获取用户id
