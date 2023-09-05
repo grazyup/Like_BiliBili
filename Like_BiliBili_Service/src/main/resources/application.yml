@@ -3,13 +3,3 @@ mybatis:
   configuration:
     #打印日志到控制台
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
-server:
-  port: 9090
-
-
-#配置日志信息到本地磁盘
-logging:
-  file:
-    name: D:/java_SpringBoot/Project/Like_BiliBili_log
-  level:
-    com.grazy.mapper: debug
