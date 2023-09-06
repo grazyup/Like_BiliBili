@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.grazy.mapper.AuthRoleMenuMapper">
+
+    <resultMap id="AuthMenuResultMap" type="com.grazy.auth.AuthRoleMenu">
+        <id column="id" property="id"/>
+        <result column="roleId" property="roleId"/>
+        <result column="menuId" property="menuId"/>
+        <association property="authMenu" javaType="com.grazy.auth.AuthMenu">
+            <result column="name" property="name"/>
+            <result column="code" property="code"/>
+        </association>
+    </resultMap>
+
+    <!--联表查询，同时查询 角色-访问页面权限中间表 和 访问页面权限表-->
+    <select id="selectAuthRoleMenusByRoleIds" resultMap="AuthMenuResultMap">
+        select
+        arm.*,
+        am.name,
+        am.code
+        from
+        t_auth_role_menu arm
+        left join t_auth_menu am on arm.menuId = am.id
+        where
+        arm.roleId in
+        <foreach collection="roleIds" item="roleId" separator="," index="index" close=")" open="(">
+            #{roleId}
+        </foreach>
+    </select>
+
+
+</mapper>
