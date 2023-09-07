@@ -21,6 +21,7 @@
     </properties>
 
 
+    <!--项目模块-->
     <modules>
         <module>Like_BiliBili_Api</module>
         <module>Like_BiliBili_Service</module>
@@ -93,6 +94,12 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+
+        <!--springAOP依赖-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
         </dependency>
 
     </dependencies>

@@ -1,6 +1,9 @@
 package com.grazy.api;
 
+import com.grazy.Common.AuthRoleConstant;
 import com.grazy.Service.UserMomentService;
+import com.grazy.annotation.ApiLimitedRole;
+import com.grazy.annotation.DataLimitedRole;
 import com.grazy.domain.ResultResponse;
 import com.grazy.domain.UserMoment;
 import com.grazy.support.UserSupport;
@@ -20,7 +23,6 @@ import java.util.List;
 
 @RestController
 public class UserMomentApi {
-
     @Autowired
     private UserMomentService userMomentService;
 
@@ -33,6 +35,8 @@ public class UserMomentApi {
      * @param userMoment 用户动态信息参数
      * @return 响应结果
      */
+    @DataLimitedRole
+    @ApiLimitedRole(limitedRoleCodeList = {AuthRoleConstant.ROLE_LV0})
     @PostMapping("/users-moments")
     public ResultResponse<String> addUserMoments(@RequestBody UserMoment userMoment) throws Exception{
         userMoment.setUserId(userSupport.getCurrentUserId());

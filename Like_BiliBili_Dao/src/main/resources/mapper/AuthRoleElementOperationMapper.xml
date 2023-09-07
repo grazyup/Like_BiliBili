@@ -10,6 +10,7 @@
         <result column="roleId" property="roleId"/>
         <result column="elementOperationId" property="elementOperationId"/>
         <association property="authElementOperation" javaType="com.grazy.auth.AuthElementOperation">
+            <id column="id" property="id"/>
             <result column="elementName" property="elementName"/>
             <result column="elementCode" property="elementCode"/>
             <result column="operationType" property="operationType"/>

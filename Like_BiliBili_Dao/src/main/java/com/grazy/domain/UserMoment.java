@@ -18,7 +18,8 @@ public class UserMoment {
     private Long userId;
 
     /**
-     * 动态类型：0 视频、 1 直播、 2 专栏动态
+     * 动态类型：0 视频、 1 直播、 2 专栏动态  --> 数据库的权限控制： lv0 --> 无法发布内容； lv1 --> 可以发布视频类型动态；
+     *                                                       lv2 --> 可以发布视频、发起直播；  lv3以上 --> 可以发布全部类型动态
      */
     private String type;
 

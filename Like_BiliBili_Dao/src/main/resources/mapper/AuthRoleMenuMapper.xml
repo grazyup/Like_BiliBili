@@ -10,6 +10,7 @@
         <result column="roleId" property="roleId"/>
         <result column="menuId" property="menuId"/>
         <association property="authMenu" javaType="com.grazy.auth.AuthMenu">
+            <id column="id" property="id"/>
             <result column="name" property="name"/>
             <result column="code" property="code"/>
         </association>
