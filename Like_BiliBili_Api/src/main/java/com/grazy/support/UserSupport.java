@@ -22,9 +22,9 @@ public class UserSupport {
     public Long getCurrentUserId(){
         ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         //获取请求头中的token
-        String token = requestAttributes.getRequest().getHeader("token");
+        String Token = requestAttributes.getRequest().getHeader("token");
         //解析token获取userid
-        Long userId = TokenUtil.verifyToken(token);
+        Long userId = TokenUtil.verifyToken(Token);
         if(userId < 0){
             throw new CustomException("非法用户！");
         }

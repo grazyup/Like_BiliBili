@@ -1,11 +1,13 @@
 package com.grazy.mapper;
 
 import com.alibaba.fastjson.JSONObject;
+import com.grazy.auth.RefreshTokenDetail;
 import com.grazy.domain.User;
 import com.grazy.domain.UserInfo;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -38,4 +40,10 @@ public interface UserMapper {
     Integer pageCountUserInfo(Map<String,Object> params);
 
     List<UserInfo> pageListUserInfo(Map<String,Object> params);
+
+    void deleteRefreshToken(@Param("refreshToken") String refreshToken, @Param("userId") Long id);
+
+    void insertRefreshToken(@Param("refreshToken") String refreshToken, @Param("userId") Long id, @Param("createTime") Date time);
+
+    RefreshTokenDetail selectRefreshToken(String refreshToken);
 }

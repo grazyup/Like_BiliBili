@@ -1,11 +1,14 @@
 package com.grazy.Service.impl;
 
 import com.alibaba.fastjson.JSONObject;
+import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.grazy.Common.UserConstant;
 import com.grazy.Exception.CustomException;
 import com.grazy.Service.UserRoleService;
 import com.grazy.Service.UserService;
+import com.grazy.auth.RefreshTokenDetail;
 import com.grazy.domain.PageResult;
+import com.grazy.domain.ResultResponse;
 import com.grazy.domain.User;
 import com.grazy.domain.UserInfo;
 import com.grazy.mapper.UserMapper;
@@ -13,6 +16,7 @@ import com.grazy.utils.MD5Util;
 import com.grazy.utils.RSAUtil;
 import com.grazy.utils.TokenUtil;
 import com.mysql.cj.util.StringUtils;
+import jdk.nashorn.internal.parser.Token;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -106,8 +110,86 @@ public class userServiceImpl implements UserService {
         if(!dbUser.getPassword().equals(MDPassword)){
             throw new CustomException("密码错误！");
         }
-        return TokenUtil.generateToken(dbUser.getId());
+        return TokenUtil.generateAccessToken(dbUser.getId());
     }
+
+
+    @Override
+    public Map<String, Object> loginDoubleTokens(User user) throws Exception {
+        User dbUser = null;
+        //判断用户是使用电话号码还是邮箱登录
+        if(!StringUtils.isNullOrEmpty(user.getPhone())){
+            dbUser = getUserByPhone(user.getPhone());
+        }else if(!StringUtils.isNullOrEmpty(user.getEmail())){
+            dbUser = getUserByEmail(user.getEmail());
+        }else{
+            throw new CustomException("账号不能为空!");
+        }
+        if(dbUser == null){
+            //未注册
+            throw new CustomException("该账号未注册!");
+        }
+        //原始密码
+        String rawPassword = null;
+        try {
+            //RSA解密
+            rawPassword = RSAUtil.decrypt(user.getPassword());
+        } catch (Exception e) {
+            throw new CustomException("密码RSA解密失败！");
+        }
+        //将原始密码进行MD5加密
+        String MDPassword = MD5Util.sign(rawPassword, dbUser.getSalt(), "UTF-8");
+        //判断数据库存储的密码与传入的密码是否正确
+        if(!dbUser.getPassword().equals(MDPassword)){
+            throw new CustomException("密码错误！");
+        }
+        //获取访问token
+        String accessToken = TokenUtil.generateAccessToken(dbUser.getId());
+        //获取刷新token
+        String refreshToken = TokenUtil.generateRefreshToken(dbUser.getId());
+        //删除原先的刷新token，再新的token添加到数据库
+        userMapper.deleteRefreshToken(refreshToken,dbUser.getId());
+        userMapper.insertRefreshToken(refreshToken,dbUser.getId(),new Date());
+        //封装到map集合中
+        Map<String,Object> doubleTokens = new HashMap<>();
+        doubleTokens.put("accessToken",accessToken);
+        doubleTokens.put("refreshToken",refreshToken);
+        return doubleTokens;
+    }
+
+
+    @Override
+    public void logout(String refreshToken, Long currentId) {
+        //删除退出登录账号的刷新token
+        userMapper.deleteRefreshToken(refreshToken,currentId);
+    }
+
+
+    @Override
+    public String getNewAccessTokenByRefreshToken(String refreshToken) throws Exception {
+        //根据传入参数获取刷新token数据
+        RefreshTokenDetail refreshTokenDetail = userMapper.selectRefreshToken(refreshToken);
+        String accessToken = null;
+        if(refreshTokenDetail == null){
+            throw new CustomException(556,"RefreshToken已过期!");
+        }else{
+            try {
+                //检验RefreshToken是否过期
+                if(TokenUtil.verifyRefreshToken(refreshToken)){
+                    //获取用户id,生成新的token返回
+                    accessToken = TokenUtil.generateRefreshToken(refreshTokenDetail.getUserId());
+                }
+            }catch (TokenExpiredException e){
+                //删除存在数据库的refreshToken数据
+                userMapper.deleteRefreshToken(refreshTokenDetail.getRefreshToken(), refreshTokenDetail.getUserId());
+                throw new CustomException(556,"RefreshToken已过期!");
+            } catch (Exception e){
+                throw new CustomException("非法Token！");
+            }
+        }
+        return accessToken;
+    }
+
 
     @Override
     public User getUserByEmail(String email) {

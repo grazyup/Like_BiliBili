@@ -2,10 +2,12 @@ package com.grazy.Service;
 
 import com.alibaba.fastjson.JSONObject;
 import com.grazy.domain.PageResult;
+import com.grazy.domain.ResultResponse;
 import com.grazy.domain.User;
 import com.grazy.domain.UserInfo;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -37,6 +39,30 @@ public interface UserService {
      * @return 返回生成的token
      */
     String login(User user) throws Exception;
+
+
+    /**
+     * 双token登录
+     * @param user 账号密码存储对象
+     * @return refreshToken-刷新token、accessToken-允许token
+     * @throws Exception 异常
+     */
+    Map<String, Object> loginDoubleTokens(User user) throws Exception;
+
+
+    /**
+     * 退出登录
+     * @param refreshToken 刷新token
+     */
+    void logout(String refreshToken,Long currentId);
+
+
+    /**
+     * 通过refreshToken获取新的AccessToken
+     * @param refreshToken 刷新token
+     * @return 新的accessToken
+     */
+    String getNewAccessTokenByRefreshToken(String refreshToken) throws Exception;
 
 
     /**

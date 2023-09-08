@@ -141,4 +141,26 @@
     </select>
 
 
+    <delete id="deleteRefreshToken">
+        delete from t_refresh_token where refreshToken = #{refreshToken} and userId = #{userId}
+    </delete>
+
+
+    <insert id="insertRefreshToken">
+        insert into
+            t_refresh_token(
+                    userId,
+                    refreshToken,
+                    createTime
+                )values(
+                    #{userId},
+                    #{refreshToken},
+                    #{createTime}
+                )
+    </insert>
+
+
+    <select id="selectRefreshToken" resultType="com.grazy.auth.RefreshTokenDetail">
+        select * from t_refresh_token where refreshToken = #{refreshToken}
+    </select>
 </mapper>

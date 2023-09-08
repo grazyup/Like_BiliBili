@@ -9,6 +9,9 @@ import com.grazy.utils.RSAUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
+import java.util.Map;
+
 /**
  * @Author: grazy
  * @Date: 2023/8/29 20:38
@@ -50,7 +53,7 @@ public class UserApi {
 
 
     /**
-     * 登录
+     * 登录（单一 token）
      * @param user 账号密码存储用户对象
      * @return token
      * @throws Exception 异常
@@ -58,6 +61,43 @@ public class UserApi {
     @GetMapping("/user-tokens")
     public ResultResponse<String> login(@RequestBody User user) throws Exception{
         return ResultResponse.success("token登录成功",userService.login(user));
+    }
+
+
+    /**
+     * 双token登录
+     * @param user 账号密码存储对象
+     * @return refreshToken-刷新token、accessToken-允许token
+     * @throws Exception 异常
+     */
+    @GetMapping("/user-doubleTokens")
+    public ResultResponse<Map<String,Object>> loginDoubleTokens(@RequestBody User user) throws Exception{
+        Map<String,Object> tokensMap = userService.loginDoubleTokens(user);
+        return ResultResponse.success("登录成功",tokensMap);
+    }
+
+
+    /**
+     * 退出登录
+     * @return 响应结果
+     */
+    @DeleteMapping("/user-logout")
+    public ResultResponse<String> logout(HttpServletRequest httpServletRequest){
+        //通过请求头获取刷新token
+        userService.logout(httpServletRequest.getHeader("refreshToken"),userSupport.getCurrentUserId());
+        return ResultResponse.success("退出登录成功!");
+    }
+
+
+    /**
+     * 通过refreshToken获取新的AccessToken
+     * @param httpServletRequest 请求
+     * @return 新的accessToken
+     */
+    @PostMapping("/user-getNewAccessToken")
+    public ResultResponse<String> getNewAccessTokenByRefreshToken(HttpServletRequest httpServletRequest) throws Exception{
+        String refreshToken = httpServletRequest.getHeader("refreshToken");
+        return ResultResponse.success("新token获取成功！",userService.getNewAccessTokenByRefreshToken(refreshToken));
     }
 
 

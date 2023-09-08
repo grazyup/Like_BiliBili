@@ -23,12 +23,12 @@ public class TokenUtil {
 
 
     /**
-     * 生成token
+     * 生成允许访问token
      * @param userId 用户id
      * @return token
      * @throws Exception 异常
      */
-    public static String generateToken(Long userId) throws Exception {
+    public static String generateAccessToken(Long userId) throws Exception {
         //RSA加密算法
         Algorithm algorithm = Algorithm.RSA256(RSAUtil.getPublicKey(), RSAUtil.getPrivateKey());
         //生成日历对象
@@ -37,6 +37,32 @@ public class TokenUtil {
         calendar.setTime(new Date());
         //设置token过期时间
         calendar.add(Calendar.SECOND,300);
+        //生成JWT
+        return JWT.create().withKeyId(String.valueOf(userId))
+                //系统的签发者
+                .withIssuer(ISSUER)
+                //设置过期时间
+                .withExpiresAt(calendar.getTime())
+                //生成签名加密
+                .sign(algorithm);
+    }
+
+    /**
+     * 生成刷新token
+     * @param userId 用户id
+     * @return token
+     * @throws Exception 异常
+     */
+    public static String generateRefreshToken(Long userId) throws Exception {
+        //RSA加密算法
+        Algorithm algorithm = Algorithm.RSA256(RSAUtil.getPublicKey(), RSAUtil.getPrivateKey());
+        //生成日历对象
+        Calendar calendar = Calendar.getInstance();
+        //设置时间
+        calendar.setTime(new Date());
+        //设置token过期时间
+//        calendar.add(Calendar.DAY_OF_MONTH,7);
+        calendar.add(Calendar.SECOND,20);
         //生成JWT
         return JWT.create().withKeyId(String.valueOf(userId))
                 //系统的签发者
@@ -62,11 +88,25 @@ public class TokenUtil {
             DecodedJWT decodedJWT = verifier.verify(token);
             return Long.valueOf(decodedJWT.getKeyId());
         } catch (TokenExpiredException e){
-            throw new CustomException(555,"token已过期!");
+            throw new CustomException(555,"Token已过期!");
         } catch (Exception e){
-            throw new CustomException("非法token！");
+            throw new CustomException("非法Token！");
         }
     }
 
+
+    /**
+     * 解析验证RefreshToken是否过期
+     * @param refreshToken 刷新token
+     * @return 用户id
+     */
+    public static Boolean verifyRefreshToken(String refreshToken) throws Exception {
+            Algorithm algorithm = Algorithm.RSA256(RSAUtil.getPublicKey(), RSAUtil.getPrivateKey());
+            //验证对象
+            JWTVerifier verifier = JWT.require(algorithm).build();
+            //解密后的jwt
+            DecodedJWT decodedJWT = verifier.verify(refreshToken);
+            return true;
+    }
 
 }
