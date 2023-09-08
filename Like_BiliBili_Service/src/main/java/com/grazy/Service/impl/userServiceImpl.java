@@ -3,6 +3,7 @@ package com.grazy.Service.impl;
 import com.alibaba.fastjson.JSONObject;
 import com.grazy.Common.UserConstant;
 import com.grazy.Exception.CustomException;
+import com.grazy.Service.UserRoleService;
 import com.grazy.Service.UserService;
 import com.grazy.domain.PageResult;
 import com.grazy.domain.User;
@@ -14,6 +15,7 @@ import com.grazy.utils.TokenUtil;
 import com.mysql.cj.util.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
@@ -29,8 +31,12 @@ public class userServiceImpl implements UserService {
     @Autowired
     private UserMapper userMapper;
 
+    @Autowired
+    private UserRoleService userRoleService;
+
 
     @Override
+    @Transactional
     public void sigIn(User user) {
         User dbUser = null;
         //判断用户是使用手机号注册还是邮箱注册
@@ -66,6 +72,8 @@ public class userServiceImpl implements UserService {
                 null,UserConstant.GENDER_MALE, UserConstant.DEFAULT_BIRTH,now,null,null);
         //数据添加到用户基本信息表中
         userMapper.addUserInfo(userInfo);
+        //添加用户默认等级角色 --> 在用户-角色关联表中添加新的一条关联数据，将新注册的账号和角色等级关联
+        userRoleService.addUserRoleData(user.getId());
     }
 
 

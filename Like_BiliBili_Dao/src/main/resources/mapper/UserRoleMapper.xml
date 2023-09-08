@@ -18,4 +18,18 @@
             ur.userId = #{currentId}
     </select>
 
+
+    <insert id="insertUserRoleData">
+        insert into
+            t_user_role(
+                        userId,
+                        roleId,
+                        createTime
+                    )values(
+                        #{userId},
+                        #{roleId},
+                        #{createTime}
+                   )
+    </insert>
+
 </mapper>

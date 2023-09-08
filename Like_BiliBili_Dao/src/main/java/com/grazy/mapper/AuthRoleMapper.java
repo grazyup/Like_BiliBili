@@ -1,5 +1,6 @@
 package com.grazy.mapper;
 
+import com.grazy.auth.AuthRole;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
@@ -10,4 +11,6 @@ import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
 public interface AuthRoleMapper {
+
+    AuthRole selectRoleByCode(String code);
 }

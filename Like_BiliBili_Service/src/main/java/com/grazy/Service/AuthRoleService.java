@@ -1,5 +1,6 @@
 package com.grazy.Service;
 
+import com.grazy.auth.AuthRole;
 import com.grazy.auth.AuthRoleElementOperation;
 import com.grazy.auth.AuthRoleMenu;
 
@@ -26,4 +27,11 @@ public interface AuthRoleService {
      * @param roleIds 角色id集合
      */
     List<AuthRoleMenu> getAuthRoleMenusByRoleIds(Set<Long> roleIds);
+
+    /**
+     * 根据角色等级编码获取角色信息
+     * @param code 角色等级编码
+     * @return 角色数据
+     */
+    AuthRole getRoleByCode(String code);
 }

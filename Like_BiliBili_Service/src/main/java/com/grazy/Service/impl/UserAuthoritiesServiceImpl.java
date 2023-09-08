@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 @Service
 public class UserAuthoritiesServiceImpl implements UserAuthoritiesService {
 
+    //用户-角色关联表服务
     @Autowired
     private UserRoleService userRoleService;
 

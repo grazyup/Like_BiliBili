@@ -15,4 +15,6 @@ import java.util.List;
 public interface UserRoleMapper {
 
     List<UserRole> selectUserRoleDateByUserId(Long currentUserId);
+
+    void insertUserRoleData(UserRole userRole);
 }
