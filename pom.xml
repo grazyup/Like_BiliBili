@@ -13,6 +13,7 @@
     <groupId>com.grazy</groupId>
     <artifactId>Like_BiliBili</artifactId>
     <version>0.0.1-SNAPSHOT</version>
+
     <!--maven多模块导入依赖需要打包方式改为pom-->
     <packaging>pom</packaging>
 
@@ -100,6 +101,13 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
+
+        <!--FastDFS依赖-->
+        <dependency>
+            <groupId>com.github.tobato</groupId>
+            <artifactId>fastdfs-client</artifactId>
+            <version>1.27.2</version>
         </dependency>
 
     </dependencies>
