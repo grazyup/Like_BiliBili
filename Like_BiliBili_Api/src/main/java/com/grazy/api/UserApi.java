@@ -37,7 +37,8 @@ public class UserApi {
     @GetMapping("/rsa-pks")
     public ResultResponse<String> getPublicKey(){
         String publicKeyStr = RSAUtil.getPublicKeyStr();
-        return ResultResponse.success("公钥获取成功",publicKeyStr);
+//        return ResultResponse.success("公钥获取成功",publicKeyStr);
+        return new ResultResponse<>("0","公钥获取成功",publicKeyStr);
     }
 
 
@@ -58,7 +59,7 @@ public class UserApi {
      * @return token
      * @throws Exception 异常
      */
-    @GetMapping("/user-tokens")
+    @PostMapping("/user-tokens")
     public ResultResponse<String> login(@RequestBody User user) throws Exception{
         return ResultResponse.success("token登录成功",userService.login(user));
     }
@@ -70,7 +71,7 @@ public class UserApi {
      * @return refreshToken-刷新token、accessToken-允许token
      * @throws Exception 异常
      */
-    @GetMapping("/user-doubleTokens")
+    @PostMapping("/user-dts")
     public ResultResponse<Map<String,Object>> loginDoubleTokens(@RequestBody User user) throws Exception{
         Map<String,Object> tokensMap = userService.loginDoubleTokens(user);
         return ResultResponse.success("登录成功",tokensMap);

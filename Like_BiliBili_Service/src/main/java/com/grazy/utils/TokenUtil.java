@@ -88,7 +88,7 @@ public class TokenUtil {
             DecodedJWT decodedJWT = verifier.verify(token);
             return Long.valueOf(decodedJWT.getKeyId());
         } catch (TokenExpiredException e){
-            throw new CustomException(555,"Token已过期!");
+            throw new CustomException("555","Token已过期!");
         } catch (Exception e){
             throw new CustomException("非法Token！");
         }

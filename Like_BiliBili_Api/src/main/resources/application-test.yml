@@ -16,7 +16,7 @@ spring:
       time-to-live: 1800000
 
 server:
-  port: 9090
+  port: 8888
 
 
 #配置日志信息到本地磁盘

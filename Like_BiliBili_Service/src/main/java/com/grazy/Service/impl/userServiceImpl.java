@@ -171,7 +171,7 @@ public class userServiceImpl implements UserService {
         RefreshTokenDetail refreshTokenDetail = userMapper.selectRefreshToken(refreshToken);
         String accessToken = null;
         if(refreshTokenDetail == null){
-            throw new CustomException(556,"RefreshToken已过期!");
+            throw new CustomException("556","RefreshToken已过期!");
         }else{
             try {
                 //检验RefreshToken是否过期
@@ -182,7 +182,7 @@ public class userServiceImpl implements UserService {
             }catch (TokenExpiredException e){
                 //删除存在数据库的refreshToken数据
                 userMapper.deleteRefreshToken(refreshTokenDetail.getRefreshToken(), refreshTokenDetail.getUserId());
-                throw new CustomException(556,"RefreshToken已过期!");
+                throw new CustomException("556","RefreshToken已过期!");
             } catch (Exception e){
                 throw new CustomException("非法Token！");
             }

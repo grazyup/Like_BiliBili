@@ -49,7 +49,7 @@ public class UserMomentApi {
      * 获取个人账户订阅的动态信息
      * @return 订阅动态信息
      */
-    @GetMapping("/users-subscribed-moments")
+    @GetMapping("/user-subscribed-moments")
     public ResultResponse<List<UserMoment>> getUserSubscribedMoment(){
         List<UserMoment> userMomentList = userMomentService.getUserSubscribeMoment(userSupport.getCurrentUserId());
         return ResultResponse.success("获取成功！",userMomentList);
