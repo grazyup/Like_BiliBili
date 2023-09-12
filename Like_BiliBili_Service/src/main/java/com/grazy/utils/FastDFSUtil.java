@@ -8,6 +8,7 @@ import com.grazy.Exception.CustomException;
 import com.mysql.cj.util.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
@@ -25,6 +26,7 @@ import java.util.Set;
  * @Description:  fastDFS文件存储管理系统工具类
  */
 
+@Component
 public class FastDFSUtil {
 
     @Autowired
@@ -44,7 +46,7 @@ public class FastDFSUtil {
 
     private static final String UPLOADED_NO_KEY = "uploaded-no-key";
 
-    private static final int SLICE_SIZE = 1024 * 1024 * 2;
+    private static final int SLICE_SIZE = 1024 * 1024;
 
 
     public String getFileType(MultipartFile file){
@@ -52,7 +54,7 @@ public class FastDFSUtil {
             throw new CustomException("非法文件");
         }
         String originalFilename = file.getOriginalFilename();
-       return originalFilename.substring(originalFilename.indexOf("."));
+       return originalFilename.substring(originalFilename.indexOf(".") + 1);
     }
 
 
@@ -95,8 +97,8 @@ public class FastDFSUtil {
      * @throws Exception 异常
      */
     public void modifyFile(MultipartFile file, String filePath, Long offSet) throws Exception{
-        appendFileStorageClient.modifyFile(DEFAULT_GROUP,filePath,
-                file.getInputStream(),file.getSize(),offSet);
+        appendFileStorageClient.modifyFile(DEFAULT_GROUP,filePath, file.getInputStream(),file.getSize(),offSet);
+        file.getInputStream().close();
     }
 
 
@@ -128,21 +130,23 @@ public class FastDFSUtil {
                 throw new CustomException("上传失败！");
             }
             redisTemplate.opsForValue().set(pathKey,firstFilePath);
-            redisTemplate.opsForValue().set(uploadedNoKey,"1");
+            redisTemplate.opsForValue().set(uploadedNoKey, "1");
         }else{
             String filePath = redisTemplate.opsForValue().get(pathKey);
             if(StringUtils.isNullOrEmpty(filePath)){
                 throw new CustomException("上传失败！");
             }
             this.modifyFile(file,filePath,uploadedSize);
+            //需要将redis的value序列化后才能实现String转为Integer自增 (GenericToStringSerializer、StringRedisSerializer将字符串的值直接转为字节数组，所以保存到redis中是数字，所以可以进行加1)
             redisTemplate.opsForValue().increment(uploadedNoKey);
         }
         uploadedSize += file.getSize();
         redisTemplate.opsForValue().set(uploadedSizeKey,String.valueOf(uploadedSize));
         //如果文件全部上传完成，清空Redis中的文件上传缓存数据
         Integer uploadedNo = Integer.valueOf(redisTemplate.opsForValue().get(uploadedNoKey));
-        String resultPath = redisTemplate.opsForValue().get(pathKey);
+        String resultPath = null;
         if(uploadedNo.equals(totalSliceNo)){
+            resultPath =  redisTemplate.opsForValue().get(pathKey);
             //上传完毕
             redisTemplate.delete(Arrays.asList(pathKey,uploadedNoKey,uploadedSizeKey));
         }
@@ -178,6 +182,8 @@ public class FastDFSUtil {
             randomAccessFile.close();
             count++;
         }
+        //删除临时文件
+        file.delete();
     }
 
 
@@ -202,5 +208,10 @@ public class FastDFSUtil {
     public void deleteFile(String filePath){
         fastFileStorageClient.deleteFile(filePath);
     }
+
+
+    /**
+     * Redis为value未序列化不能使用自增
+     */
 
 }

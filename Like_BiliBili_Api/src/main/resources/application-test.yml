@@ -15,8 +15,14 @@ spring:
     redis:
       time-to-live: 1800000
 
+  #配置上传文件的大小限制
+  servlet:
+    multipart:
+      max-file-size: 500MB
+      max-request-size: 500MB
+
 server:
-  port: 8888
+  port: 9090
 
 
 #配置日志信息到本地磁盘
