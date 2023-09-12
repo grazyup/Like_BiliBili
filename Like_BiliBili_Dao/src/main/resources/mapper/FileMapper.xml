@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.grazy.mapper.FileMapper">
+
+    <resultMap id="DBFile" type="com.grazy.domain.MyFile">
+        <result property="fileMD5" column="md5"/>
+    </resultMap>
+
+    <select id="selectFileByFileMD5" resultMap="DBFile">
+        select * from t_file where md5 = #{fileMD5}
+    </select>
+
+
+    <insert id="insertFileData">
+        insert into t_file(
+                    url,
+                    type,
+                    md5,
+                    createTime
+                )values(
+                    #{url},
+                    #{type},
+                    #{fileMD5},
+                    #{createTime}
+                )
+    </insert>
+</mapper>

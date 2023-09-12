@@ -2,6 +2,8 @@ package com.grazy.Service;
 
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+
 /**
  * @Author: grazy
  * @Date: 2023/9/11 16:10
@@ -20,4 +22,12 @@ public interface FileService {
      * @throws Exception 异常
      */
     String uploadFileBySlice(MultipartFile slice, String fileMD5, Integer sliceNo, Integer totalSliceNo) throws Exception;
+
+
+    /**
+     *  获取文件MD5加密字符串
+     * @param file 文件
+     * @return 加密字符串
+     */
+    String getFileMD5(MultipartFile file) throws IOException;
 }

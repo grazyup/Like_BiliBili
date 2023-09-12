@@ -1,7 +1,11 @@
 package com.grazy.utils;
 
 import org.apache.commons.codec.digest.DigestUtils;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 
 /**
@@ -34,4 +38,27 @@ public class MD5Util {
 			return content.getBytes();
 		}
 	}
+
+
+	/**
+	 *  获取文件MD5加密字符串（尽管修改了文件名和文件后缀，只要不修改内容，生成的加密都是一样）
+	 *  	MD5对文件加密是对二进制输入流进行加密。在实现MD5加密的过程中，首先需要将文件通过流的方式转化为二进制，然后再计算该文件的MD5值。
+	 * @param file 文件
+	 * @return 加密字符串
+	 * @throws IOException IO异常
+	 */
+    public static String getFileMD5(MultipartFile file) throws IOException {
+		InputStream inputStream = file.getInputStream();
+		//获取文件字节数组输出流
+		ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+		byte[] bytes = new byte[1024];
+		int realLen;
+		while((realLen = inputStream.read(bytes)) > 0){
+			//写入
+			byteArrayOutputStream.write(bytes,0,realLen);
+		}
+		inputStream.close();
+		//执行加密
+		return DigestUtils.md5Hex(byteArrayOutputStream.toByteArray());
+    }
 }
