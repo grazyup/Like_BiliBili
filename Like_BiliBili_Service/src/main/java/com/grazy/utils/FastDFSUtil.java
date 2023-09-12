@@ -12,10 +12,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.RandomAccessFile;
+import java.io.*;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -66,8 +63,10 @@ public class FastDFSUtil {
         //文件属性集合
         Set<MetaData> metaDataSet = new HashSet<>();
         String fileType = this.getFileType(file);
+        InputStream inputStream = file.getInputStream();
         //上传,返回文件的路径相关信息
-        StorePath storePath = fastFileStorageClient.uploadFile(file.getInputStream(), file.getSize(), fileType, metaDataSet);
+        StorePath storePath = fastFileStorageClient.uploadFile(inputStream, file.getSize(), fileType, metaDataSet);
+        inputStream.close();
         return storePath.getPath();
     }
 
@@ -82,7 +81,9 @@ public class FastDFSUtil {
      */
     public String uploadAppenderFile(MultipartFile file) throws Exception{
         String fileType = this.getFileType(file);
-        StorePath storePath = appendFileStorageClient.uploadAppenderFile(DEFAULT_GROUP, file.getInputStream(), file.getSize(), fileType);
+        InputStream inputStream = file.getInputStream();
+        StorePath storePath = appendFileStorageClient.uploadAppenderFile(DEFAULT_GROUP,inputStream, file.getSize(), fileType);
+        inputStream.close();
         return storePath.getPath();
     }
 
@@ -97,7 +98,9 @@ public class FastDFSUtil {
      * @throws Exception 异常
      */
     public void modifyFile(MultipartFile file, String filePath, Long offSet) throws Exception{
-        appendFileStorageClient.modifyFile(DEFAULT_GROUP,filePath, file.getInputStream(),file.getSize(),offSet);
+        InputStream inputStream = file.getInputStream();
+        appendFileStorageClient.modifyFile(DEFAULT_GROUP, filePath, inputStream, file.getSize(), offSet);
+        inputStream.close();
         file.getInputStream().close();
     }
 
@@ -208,10 +211,5 @@ public class FastDFSUtil {
     public void deleteFile(String filePath){
         fastFileStorageClient.deleteFile(filePath);
     }
-
-
-    /**
-     * Redis为value未序列化不能使用自增
-     */
 
 }
