@@ -8,6 +8,9 @@ import com.grazy.support.UserSupport;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 /**
  * @Author: grazy
  * @Date: 2023/9/12 16:45
@@ -45,5 +48,15 @@ public class VideoApi {
     public ResultResponse<PageResult<Video>> pageListVideos(@RequestParam(defaultValue = "1") Integer current, @RequestParam(defaultValue = "10") Integer size, String area){
         PageResult<Video> result = videoService.pageListVideos(current,size,area);
         return ResultResponse.success("获取成功！",result);
+    }
+
+
+    /**
+     * 分片（拖动进度条）在线观看视频（以二进制流的形式在response中将视频输出） --- 与下载文件视频类似
+     * @param path 视频的相对路径
+     */
+    @GetMapping("/video-slices")
+    public void viewVideoOnlineBySlices(HttpServletRequest request, HttpServletResponse response, String path){
+        videoService.viewVideoOnlineBySlices(request,response,path);
     }
 }

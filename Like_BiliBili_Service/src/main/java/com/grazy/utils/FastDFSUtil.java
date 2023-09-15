@@ -1,5 +1,6 @@
 package com.grazy.utils;
 
+import com.github.tobato.fastdfs.domain.fdfs.FileInfo;
 import com.github.tobato.fastdfs.domain.fdfs.MetaData;
 import com.github.tobato.fastdfs.domain.fdfs.StorePath;
 import com.github.tobato.fastdfs.service.AppendFileStorageClient;
@@ -7,15 +8,16 @@ import com.github.tobato.fastdfs.service.FastFileStorageClient;
 import com.grazy.Exception.CustomException;
 import com.mysql.cj.util.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.*;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @Author: grazy
@@ -35,6 +37,9 @@ public class FastDFSUtil {
     @Resource
     private RedisTemplate<String,String > redisTemplate;
 
+    @Value("${fdfs.http.storage-add}")
+    private String httpStorageAdd;
+
     private static final String DEFAULT_GROUP = "group1";
 
     private static final String PATH_KEY = "path-key";
@@ -43,7 +48,7 @@ public class FastDFSUtil {
 
     private static final String UPLOADED_NO_KEY = "uploaded-no-key";
 
-    private static final int SLICE_SIZE = 1024 * 1024;
+    private static final int SLICE_SIZE = 1024 * 1024 * 10;
 
 
     public String getFileType(MultipartFile file){
@@ -210,6 +215,63 @@ public class FastDFSUtil {
      */
     public void deleteFile(String filePath){
         fastFileStorageClient.deleteFile(filePath);
+    }
+
+
+    /**
+     * 分片（分段/拉进度条）视频在线观看
+     * @param request 请求
+     * @param response 响应
+     * @param path 视频相对路径
+     * @throws Exception 异常
+     */
+    public void viewVideoOnlineBySlices(HttpServletRequest request, HttpServletResponse response, String path) throws Exception{
+        //视频http全路径
+        String url = httpStorageAdd + path;
+        //获取文件的详情信息
+        FileInfo fileInfo = fastFileStorageClient.queryFileInfo(DEFAULT_GROUP, path);
+        Long totalFileSize = fileInfo.getFileSize();
+
+        //创建一个新请求头内的参数集合
+        Map<String,Object> headers = new HashMap<>();
+        //获取Request请求中的全部请求头名称
+        Enumeration<String> headerNames = request.getHeaderNames();
+        while(headerNames.hasMoreElements()){
+            String header = headerNames.nextElement();
+            //将请求头中的数据添加到新建的headers中
+            headers.put(header,request.getHeader(header));
+        }
+
+        /*************************************以下是分段（拖动进度条）的核心代码**********************************************/
+
+        //一个资源单次请求的范围
+        String rangeStr = request.getHeader("Range");
+        if(StringUtils.isNullOrEmpty(rangeStr)){
+            rangeStr = "bytes=0-" + (totalFileSize - 1);
+        }
+        String[] RangeArray = rangeStr.split("bytes=|-");
+        Long begin = Long.valueOf(0);
+        if(RangeArray.length >= 2){
+            begin = Long.parseLong(RangeArray[1]);
+        }
+        Long end = totalFileSize - 1;
+        if(RangeArray.length >= 3){
+            end = Long.parseLong(RangeArray[2]);
+        }
+        //计算出这次请求范围长度
+        Long len = (end - begin) + 1;
+        String ContentRange = "bytes " + begin + "-" + end + "/" + totalFileSize;
+        response.setHeader("Accept-Ranges","bytes");
+        response.setContentLength(Math.toIntExact(len));
+        response.setHeader("Content-Range",ContentRange);
+        response.setHeader("Content-Type","video/mp4");
+
+        /*************************************以上是分段（拖动进度条）的核心代码**********************************************/
+
+        //分片在线观看的响应状态码是 206，所以响应头中的响应码需要也要改成206（如果没有上面分段的核心的代码，只需要将状态码改成200即可）
+        response.setStatus(HttpServletResponse.SC_PARTIAL_CONTENT);
+        //调用http工具类进行访问视频
+        HttpUtil.get(url,headers,response);
     }
 
 }

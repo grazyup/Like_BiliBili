@@ -6,10 +6,13 @@ import com.grazy.domain.PageResult;
 import com.grazy.domain.Video;
 import com.grazy.domain.VideoTag;
 import com.grazy.mapper.VideoMapper;
+import com.grazy.utils.FastDFSUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -25,6 +28,9 @@ public class VideoServiceImpl implements VideoService {
 
     @Autowired
     private VideoMapper videoMapper;
+
+    @Autowired
+    private FastDFSUtil fastDFSUtil;
 
     @Override
     @Transactional
@@ -62,6 +68,17 @@ public class VideoServiceImpl implements VideoService {
            });
        }
        return new PageResult<>(total,records);
+    }
+
+
+
+    @Override
+    public void viewVideoOnlineBySlices(HttpServletRequest request, HttpServletResponse response, String path) {
+        try{
+            fastDFSUtil.viewVideoOnlineBySlices(request, response, path);
+        }catch (Exception e){
+            //e.printStackTrace();
+        }
     }
 
 
