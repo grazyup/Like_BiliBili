@@ -1,15 +1,14 @@
 package com.grazy.api;
 
 import com.grazy.Service.VideoService;
-import com.grazy.domain.PageResult;
-import com.grazy.domain.ResultResponse;
-import com.grazy.domain.Video;
+import com.grazy.domain.*;
 import com.grazy.support.UserSupport;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.Map;
 
 /**
  * @Author: grazy
@@ -58,5 +57,136 @@ public class VideoApi {
     @GetMapping("/video-slices")
     public void viewVideoOnlineBySlices(HttpServletRequest request, HttpServletResponse response, String path){
         videoService.viewVideoOnlineBySlices(request,response,path);
+    }
+
+
+    /**
+     * 点赞视频
+     * @param videoId 视频id
+     * @return 响应结果
+     */
+    @PostMapping("/video-likes")
+    public ResultResponse<String> addVideoLikes(@RequestParam Long videoId){
+        videoService.addVideoLikes(userSupport.getCurrentUserId(),videoId);
+        return ResultResponse.success("点赞成功！");
+    }
+
+
+    /**
+     * 取消点赞
+     * @param videoId 视频id
+     * @return 响应结果
+     */
+    @DeleteMapping("/video-likes")
+    public ResultResponse<String> unlikeVideo(@RequestParam Long videoId){
+        videoService.unlikeVideo(userSupport.getCurrentUserId(),videoId);
+        return ResultResponse.success("点赞取消成功！");
+    }
+
+
+    /**
+     * 获取视频的点赞数量
+     * @param videoId 视频id
+     * @return 响应点赞数据
+     */
+    @GetMapping("/video-likes")
+    public ResultResponse<Map<String,Object>> getVideoLikeNumber(@RequestParam Long videoId){
+        Long currentUserId = null;
+        try {
+            currentUserId = userSupport.getCurrentUserId();
+        }catch (Exception ignore){
+            //忽略异常
+        }
+        Map<String,Object> videoLikeMap = videoService.getVideoLikeNumber(currentUserId,videoId);
+        return ResultResponse.success("获取成功！",videoLikeMap);
+    }
+
+
+    /**
+     * 收藏视频
+     * @param videoCollection 视频收藏对象
+     * @return 响应结果
+     */
+    @PostMapping("/video-collections")
+    public ResultResponse<String> addVideoCollection(@RequestBody VideoCollection videoCollection){
+        videoCollection.setUserId(userSupport.getCurrentUserId());
+        videoService.addVideoCollection(videoCollection);
+        return ResultResponse.success("收藏成功！");
+    }
+
+
+    /**
+     * 取消收藏
+     * @param videoCollection 视频收藏对象
+     * @return 响应结果
+     */
+    @DeleteMapping("/video-collections")
+    public ResultResponse<String> unfollowVideo(@RequestBody VideoCollection videoCollection){
+        videoCollection.setUserId(userSupport.getCurrentUserId());
+        videoService.unfollowVideoCollection(videoCollection);
+        return ResultResponse.success("收藏成功！");
+    }
+
+
+    /**
+     * 获取视频收藏的数量
+     * @param videoCollection 视频收藏对象
+     * @return 收藏详情数据
+     */
+    @GetMapping("/video-collections")
+    public ResultResponse<Map<String,Object>> getVideoCollectionNumber(@RequestBody VideoCollection videoCollection){
+        Long userId = null;
+        try{
+            userId = userSupport.getCurrentUserId();
+        }catch (Exception ignore){
+            //忽略异常
+        }
+        videoCollection.setUserId(userId);
+        Map<String,Object> videoCollectionNumberMap = videoService.getVideoCollectionNumber(videoCollection);
+        return ResultResponse.success("获取成功！",videoCollectionNumberMap);
+    }
+
+
+    /**
+     * 视频投币
+     * @param videoCoin 视频投币记录对象
+     * @return 响应结果
+     */
+    @PostMapping("/video-coins")
+    public ResultResponse<String> addVideoCoins(@RequestBody VideoCoin videoCoin){
+        Long currentUserId = userSupport.getCurrentUserId();
+        videoService.addVideoCoins(currentUserId,videoCoin);
+        return ResultResponse.success("投币成功！");
+    }
+
+
+    /**
+     * 获取视频的全部投币数
+     * @param videoCoin 视频投币记录对象
+     * @return 投币详情数据
+     */
+    @GetMapping("/video-coins")
+    public ResultResponse<Map<String,Object>> getVideoCoinsNumber(@RequestBody VideoCoin videoCoin){
+        Long userId = null;
+        try {
+            userId = userSupport.getCurrentUserId();
+        }catch (Exception ignore){
+        }
+        videoCoin.setUserId(userId);
+        Map<String,Object> videoCoinsMap = videoService.getVideoCoinsNumber(videoCoin);
+        return ResultResponse.success("获取成功！",videoCoinsMap);
+    }
+
+
+    /**
+     *  发布评论
+     * @param videoComment 评论对象
+     * @return 响应结果
+     */
+    @PostMapping("/video-comments")
+    public ResultResponse<String> addVideoComment(@RequestBody VideoComment videoComment){
+        videoComment.setUserId(userSupport.getCurrentUserId());
+        videoService.addVideoComment(videoComment);
+        return ResultResponse.success("发不成功！");
     }
 }

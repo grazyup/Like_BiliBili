@@ -23,20 +23,15 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class GlobalExceptionHandler {
 
     /**
-     * 捕获异常信息
+     * 捕获自定义异常信息
      * @return 将JSON格式的异常信息响应到前端
      */
     @ResponseBody
-    @ExceptionHandler(Exception.class)
-    public ResultResponse<String> CustomExceptionHandler(Exception e) {
+    @ExceptionHandler(CustomException.class)
+    public ResultResponse<String> CustomExceptionHandler(CustomException e) {
         //获取异常的msg
         String message = e.getMessage();
-        if (e instanceof CustomException){
             //捕获的是自定义的异常
             return ResultResponse.Custom(((CustomException) e).getCode(), message);
-        }else {
-            //其他异常
-            return ResultResponse.error(message);
         }
-    }
 }

@@ -1,10 +1,9 @@
 package com.grazy.Service.impl;
 
 import com.grazy.Exception.CustomException;
+import com.grazy.Service.UserCoinsService;
 import com.grazy.Service.VideoService;
-import com.grazy.domain.PageResult;
-import com.grazy.domain.Video;
-import com.grazy.domain.VideoTag;
+import com.grazy.domain.*;
 import com.grazy.mapper.VideoMapper;
 import com.grazy.utils.FastDFSUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,9 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * @Author: grazy
@@ -31,6 +28,11 @@ public class VideoServiceImpl implements VideoService {
 
     @Autowired
     private FastDFSUtil fastDFSUtil;
+
+    @Autowired
+    private UserCoinsService userCoinsService;
+
+    private static final Long DEFAULT_COLLECTION_GROUP = 0L;
 
     @Override
     @Transactional
@@ -71,7 +73,6 @@ public class VideoServiceImpl implements VideoService {
     }
 
 
-
     @Override
     public void viewVideoOnlineBySlices(HttpServletRequest request, HttpServletResponse response, String path) {
         try{
@@ -82,4 +83,163 @@ public class VideoServiceImpl implements VideoService {
     }
 
 
+    /**
+     * 判断视频是否存在
+     * @param videoId 视频id
+     */
+    public void judgmentVideoExist(Long videoId){
+        if(videoId == null){
+            throw new CustomException("参数异常！");
+        }
+        if(videoMapper.selectVideoByVideoId(videoId) == null){
+            throw new CustomException("非法视频！");
+        }
+    }
+
+
+    @Override
+    public void addVideoLikes(Long currentUserId, Long videoId) {
+        //判断视频是否存在
+        this.judgmentVideoExist(videoId);
+        //判断用户是否已经点赞过
+        if(videoMapper.selectVideoLike(currentUserId,videoId) != null){
+            throw new CustomException("您已点赞过了！");
+        }
+        //添加数据
+        videoMapper.insertVideoLike(currentUserId,videoId,new Date());
+    }
+
+
+    @Override
+    public void unlikeVideo(Long currentUserId, Long videoId) {
+        //判断视频是否存在
+        this.judgmentVideoExist(videoId);
+        //判断用户是否点赞
+        if(videoMapper.selectVideoLike(currentUserId,videoId) == null){
+            throw new CustomException("您当前未点赞该视频！");
+        }
+        //删除数据
+        videoMapper.deleteVideoLike(currentUserId,videoId);
+    }
+
+
+    @Override
+    public Map<String, Object> getVideoLikeNumber(Long currentUserId, Long videoId) {
+        //判断视频是否存在
+        this.judgmentVideoExist(videoId);
+        Integer count = videoMapper.selectVideoLikeCountByVideoId(videoId);
+        //用户是否点赞当前视频
+        VideoLike videoLike = videoMapper.selectVideoLike(currentUserId,videoId);
+        Boolean isLike = videoLike != null;
+        return new HashMap<String,Object>(){{ put("count",count); put("like",isLike);}};
+    }
+
+
+    @Override
+    public void addVideoCollection(VideoCollection videoCollection) {
+        Long groupId = videoCollection.getGroupId();
+        Long userId = videoCollection.getUserId();
+        Long videoId = videoCollection.getVideoId();
+        if(userId == null){
+            throw new CustomException("非法参数!");
+        }
+        //判断是否有分组id 没有添加到默认分组中
+        if(groupId == null){
+            //根据关注分组类型获取分组id
+            groupId = videoMapper.selectCollectionGroupIdByType(DEFAULT_COLLECTION_GROUP);
+            videoCollection.setGroupId(groupId);
+        }
+        //判断视频是否存在
+        this.judgmentVideoExist(videoCollection.getVideoId());
+        if(videoMapper.selectVideoCollectionByUserIdAndVideoId(userId,videoId) != null){
+            throw new CustomException("您已收藏该内容！");
+        }
+        videoCollection.setCreateTime(new Date());
+        //删除原先的数据（如此写法可以使 更新和添加 使用同一个方法）
+        videoMapper.deleteVideoCollection(videoCollection);
+        videoMapper.insertVideoCollection(videoCollection);
+    }
+
+
+    @Override
+    public void unfollowVideoCollection(VideoCollection videoCollection) {
+        this.judgmentVideoExist(videoCollection.getVideoId());
+        if(videoMapper.selectVideoCollectionByUserIdAndVideoId(videoCollection.getUserId(), videoCollection.getVideoId()) == null){
+            throw new CustomException("您未收藏该内容！");
+        }
+        videoMapper.deleteVideoCollection(videoCollection);
+    }
+
+
+    @Override
+    public Map<String, Object> getVideoCollectionNumber(VideoCollection videoCollection) {
+        Long videoId = videoCollection.getVideoId();
+        this.judgmentVideoExist(videoId);
+        Integer count = videoMapper.selectVideoCollectionCountByVideoId(videoId);
+        //判断用户是否收藏了视频
+        Boolean isCollection = videoMapper.selectVideoCollectionByUserIdAndVideoId(videoCollection.getUserId(),videoId) != null;
+        return new HashMap<String,Object>(){{
+            put("count",count);
+            put("isCollection",isCollection);
+        }};
+    }
+
+
+    @Override
+    @Transactional
+    public void addVideoCoins(Long currentUserId, VideoCoin videoCoin) {
+        Integer amount = videoCoin.getAmount();
+        Long videoId = videoCoin.getVideoId();
+        //判断视频的合法性
+        this.judgmentVideoExist(videoId);
+        //判断当前账户是否拥有足够的硬币
+        Integer userCoinsAmount = userCoinsService.getUserCoinsAmount(currentUserId);
+        userCoinsAmount = userCoinsAmount == null ? 0 : userCoinsAmount;
+        if(userCoinsAmount < amount){
+            throw new CustomException("您的硬币数量不足！");
+        }
+        //查询当前用户对该视频之前的投币记录
+        VideoCoin dbVideoCoins = videoMapper.selectVideoCoinsByUserIdAndVideoId(currentUserId,videoId);
+        if(dbVideoCoins == null){
+            //用户首次对该视频投币
+            videoCoin.setUserId(currentUserId);
+            videoCoin.setCreateTime(new Date());
+            videoMapper.insertVideoCoins(videoCoin);
+        }else{
+            //获取用户投币记录表中已投的金币数额
+            Integer videoCoinsAmount = videoMapper.selectVideoCoinsAmount(currentUserId,videoId);
+            //更新用户以前的投币记录
+            videoCoinsAmount += videoCoin.getAmount();
+            videoCoin.setAmount(videoCoinsAmount);
+            videoCoin.setUserId(currentUserId);
+            videoCoin.setUpdateTime(new Date());
+            videoMapper.updateVideoCoins(videoCoin);
+        }
+        //更新用户账户的硬币数量
+        userCoinsService.updateUserCoinsAmount(currentUserId, userCoinsAmount - amount);
+    }
+
+
+    @Override
+    public Map<String, Object> getVideoCoinsNumber(VideoCoin videoCoin) {
+        Long videoId = videoCoin.getVideoId();
+        Long userId = videoCoin.getUserId();
+        this.judgmentVideoExist(videoId);
+        //获取视频的全部投币数量
+        Integer coinsNumber = videoMapper.selectVideoCoinsNumber(videoId);
+        //判断用户是否有投币记录
+        Boolean havePlayCoins = videoMapper.selectVideoCoinsByUserIdAndVideoId(userId,videoId) != null;
+        return new HashMap<String,Object>(){{
+            put("count",coinsNumber);
+            put("havePlayCoins",havePlayCoins);
+        }};
+    }
+
+
+    @Override
+    public void addVideoComment(VideoComment videoComment) {
+        this.judgmentVideoExist(videoComment.getVideoId());
+        videoComment.setCreateTime(new Date());
+        videoMapper.insertVideoComment(videoComment);
+    }
 }

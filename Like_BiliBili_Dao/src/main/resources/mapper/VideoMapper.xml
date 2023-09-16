@@ -77,4 +77,127 @@
     </select>
 
 
+    <select id="selectVideoByVideoId" resultType="com.grazy.domain.Video">
+        select * from t_video where id = #{videoId}
+    </select>
+
+
+    <select id="selectVideoLike" resultType="com.grazy.domain.VideoLike">
+        select * from t_video_like where userId = #{currentUserId} and videoId = #{videoId}
+    </select>
+
+
+    <insert id="insertVideoLike">
+        insert into t_video_like(
+                        userId,
+                        videoId,
+                        createTime
+                    )values (
+                        #{currentUserId},
+                        #{videoId},
+                        #{createTime}
+                    )
+    </insert>
+
+
+    <delete id="deleteVideoLike">
+        delete from t_video_like where userId = #{currentUserId} and videoId = #{videoId}
+    </delete>
+
+
+    <select id="selectVideoLikeCountByVideoId" resultType="java.lang.Integer">
+        select count(1) from t_video_like where videoId = #{videoId}
+    </select>
+
+
+    <select id="selectCollectionGroupIdByType" resultType="java.lang.Long">
+        select id from t_collection_group where type = #{groupType}
+    </select>
+
+
+    <select id="selectVideoCollectionByUserIdAndVideoId" resultType="com.grazy.domain.VideoCollection">
+        select * from t_video_collection where userId = #{userId} and videoId = #{videoId}
+    </select>
+
+
+    <insert id="insertVideoCollection">
+        insert into t_video_collection(
+                            userId,
+                            videoId,
+                            groupId,
+                            createTime
+                    ) values (
+                        #{userId},
+                        #{videoId},
+                        #{groupId},
+                        #{createTime}
+                    )
+    </insert>
+
+
+    <delete id="deleteVideoCollection">
+        delete from t_video_collection where where userId = #{userId} and videoId = #{videoId}
+    </delete>
+
+
+    <select id="selectVideoCollectionCountByVideoId" resultType="java.lang.Integer">
+        select count(1) from t_video_collection where videoId = #{videoId}
+    </select>
+
+
+    <select id="selectVideoCoinsByUserIdAndVideoId" resultType="com.grazy.domain.VideoCoin">
+        select * from t_video_coin where userId = #{userId} and videoId = #{videoId}
+    </select>
+
+
+    <insert id="insertVideoCoins">
+        insert into t_video_coin(
+                userId,
+                amount,
+                createTime
+        )values (
+                 #{userId},
+                 #{amount},
+                 #{createTime}
+        )
+    </insert>
+
+
+    <select id="selectVideoCoinsAmount" resultType="java.lang.Integer">
+        select amount from t_video_coin where userId = #{userId} and videoId = #{videoId}
+    </select>
+
+
+    <update id="updateVideoCoins">
+        update t_video_coin set amount = #{amount}, updateTime = #{updateTime} where userId = #{userId}
+    </update>
+
+
+    <select id="selectVideoCoinsNumber" resultType="java.lang.Integer">
+        select sum(amount) where t_video_coin where videoId = #{videoId}
+    </select>
+
+
+    <insert id="insertVideoComment">
+        insert into t_video_comment(
+                videoId,
+                userId,
+                comment,
+                replyUserId,
+                rootId,
+                createTime
+        )values (
+                #{videoId},
+                 #{userId},
+                 #{comment},
+                 #{replyUserId},
+                 #{rootId},
+                 #{createTime}
+        )
+    </insert>
+
+
+    <select id="selectVideoCommentCountByVideoId" resultType="java.lang.Integer">
+
+    </select>
 </mapper>
