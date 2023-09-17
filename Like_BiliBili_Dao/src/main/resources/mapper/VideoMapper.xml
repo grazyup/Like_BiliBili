@@ -174,7 +174,12 @@
 
 
     <select id="selectVideoCoinsNumber" resultType="java.lang.Integer">
-        select sum(amount) where t_video_coin where videoId = #{videoId}
+        select
+            sum(amount)
+        from
+            t_video_coin
+        where
+            videoId = #{videoId}
     </select>
 
 

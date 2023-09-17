@@ -19,5 +19,5 @@ public class PageResult<T> {
     private Integer total;
 
     //查询数据列表
-    private List<T> records;
+    private List<T> list;
 }

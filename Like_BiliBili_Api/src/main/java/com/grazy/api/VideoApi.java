@@ -44,8 +44,8 @@ public class VideoApi {
      * @param area 分区
      */
     @GetMapping("/videos")
-    public ResultResponse<PageResult<Video>> pageListVideos(@RequestParam(defaultValue = "1") Integer current, @RequestParam(defaultValue = "10") Integer size, String area){
-        PageResult<Video> result = videoService.pageListVideos(current,size,area);
+    public ResultResponse<PageResult<Video>> pageListVideos(Integer size,  Integer no, String area){
+        PageResult<Video> result = videoService.pageListVideos(no,size,area);
         return ResultResponse.success("获取成功！",result);
     }
 
@@ -130,17 +130,19 @@ public class VideoApi {
 
     /**
      * 获取视频收藏的数量
-     * @param videoCollection 视频收藏对象
+     * @param  videoId 视频收藏对象
      * @return 收藏详情数据
      */
     @GetMapping("/video-collections")
-    public ResultResponse<Map<String,Object>> getVideoCollectionNumber(@RequestBody VideoCollection videoCollection){
+    public ResultResponse<Map<String,Object>> getVideoCollectionNumber(@RequestParam Long videoId){
         Long userId = null;
         try{
             userId = userSupport.getCurrentUserId();
         }catch (Exception ignore){
             //忽略异常
         }
+        VideoCollection videoCollection = new VideoCollection();
+        videoCollection.setVideoId(videoId);
         videoCollection.setUserId(userId);
         Map<String,Object> videoCollectionNumberMap = videoService.getVideoCollectionNumber(videoCollection);
         return ResultResponse.success("获取成功！",videoCollectionNumberMap);
@@ -162,17 +164,19 @@ public class VideoApi {
 
     /**
      * 获取视频的全部投币数
-     * @param videoCoin 视频投币记录对象
+     * @param videoId 视频投币记录对象
      * @return 投币详情数据
      */
     @GetMapping("/video-coins")
-    public ResultResponse<Map<String,Object>> getVideoCoinsNumber(@RequestBody VideoCoin videoCoin){
+    public ResultResponse<Map<String,Object>> getVideoCoinsNumber(@RequestParam Long videoId){
         Long userId = null;
         try {
             userId = userSupport.getCurrentUserId();
         }catch (Exception ignore){
         }
+        VideoCoin videoCoin = new VideoCoin();
         videoCoin.setUserId(userId);
+        videoCoin.setVideoId(videoId);
         Map<String,Object> videoCoinsMap = videoService.getVideoCoinsNumber(videoCoin);
         return ResultResponse.success("获取成功！",videoCoinsMap);
     }

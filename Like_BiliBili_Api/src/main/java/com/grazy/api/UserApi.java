@@ -163,7 +163,7 @@ public class UserApi {
         PageResult<UserInfo> result = userService.pageListUserInfo(params);
         //判断搜索出来的用户与当前账户是否互相关注
         if (result.getTotal() > 0) {
-            result.setRecords(userFollowingService.checkFollowingStatus(result.getRecords(),currentUserId));
+            result.setList(userFollowingService.checkFollowingStatus(result.getList(),currentUserId));
         }
         return ResultResponse.success("查询成功！",result);
     }
