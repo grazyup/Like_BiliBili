@@ -193,4 +193,20 @@ public class VideoApi {
         videoService.addVideoComment(videoComment);
         return ResultResponse.success("发不成功！");
     }
+
+
+    /**
+     * 分页获取评论
+     * @param current 当前页
+     * @param size 一页显示的数据条数
+     * @param videoId 视频id
+     * @return 分页数据
+     */
+    @GetMapping("/video-comments")
+    public ResultResponse<PageResult<VideoComment>> pageListVideoComment(@RequestParam(defaultValue = "1") Integer current,
+                                                                         @RequestParam(defaultValue = "10") Integer size,
+                                                                         @RequestParam Long videoId){
+        PageResult<VideoComment> videoCommentPageResult = videoService.pageListVideoComment(current,size,videoId);
+        return ResultResponse.success("获取成功！",videoCommentPageResult);
+    }
 }

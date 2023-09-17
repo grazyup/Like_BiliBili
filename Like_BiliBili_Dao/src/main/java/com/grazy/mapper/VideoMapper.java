@@ -59,4 +59,8 @@ public interface VideoMapper {
     void insertVideoComment(VideoComment videoComment);
 
     Integer selectVideoCommentCountByVideoId(Long videoId);
+
+    List<VideoComment> pageVideoCommentByVideoId(@Param("current") Integer current, @Param("size") Integer size, @Param("videoId") Long videoId);
+
+    List<VideoComment> batchGetVideoCommentsByRootIds(List<Long> firstCommentIdList);
 }

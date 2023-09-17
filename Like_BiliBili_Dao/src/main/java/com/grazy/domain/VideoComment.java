@@ -25,7 +25,7 @@ public class VideoComment {
     //评论
     private String comment;
 
-    //回复用户id
+    //被回复用户id
     private Long replyUserId;
 
     //根节点评论id

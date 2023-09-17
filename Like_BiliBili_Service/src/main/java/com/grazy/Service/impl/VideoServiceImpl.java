@@ -2,6 +2,7 @@ package com.grazy.Service.impl;
 
 import com.grazy.Exception.CustomException;
 import com.grazy.Service.UserCoinsService;
+import com.grazy.Service.UserService;
 import com.grazy.Service.VideoService;
 import com.grazy.domain.*;
 import com.grazy.mapper.VideoMapper;
@@ -13,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @Author: grazy
@@ -31,6 +33,9 @@ public class VideoServiceImpl implements VideoService {
 
     @Autowired
     private UserCoinsService userCoinsService;
+
+    @Autowired
+    private UserService userService;
 
     private static final Long DEFAULT_COLLECTION_GROUP = 0L;
 
@@ -241,5 +246,43 @@ public class VideoServiceImpl implements VideoService {
         this.judgmentVideoExist(videoComment.getVideoId());
         videoComment.setCreateTime(new Date());
         videoMapper.insertVideoComment(videoComment);
+    }
+
+
+    @Override
+    public PageResult<VideoComment> pageListVideoComment(Integer current, Integer size, Long videoId) {
+        this.judgmentVideoExist(videoId);
+        //获取一级评论的总数
+        Integer total = videoMapper.selectVideoCommentCountByVideoId(videoId);
+        List<VideoComment> firstCommentList = null;
+        if(total > 0){
+            //分页获取一级评论数据列表
+            firstCommentList = videoMapper.pageVideoCommentByVideoId((current-1)*size,size,videoId);
+            //提取一级评论的评论id
+            List<Long> firstCommentIdList = firstCommentList.stream().map(VideoComment::getId).collect(Collectors.toList());
+            //根据一级评论id获取对应下的全部二级评论信息
+            List<VideoComment> secondCommentList =videoMapper.batchGetVideoCommentsByRootIds(firstCommentIdList);
+            //提取一级和二级评论发布者id
+            Set<Long> firstCommentUserIdList = firstCommentList.stream().map(VideoComment::getUserId).collect(Collectors.toSet());
+            Set<Long> secondCommentUserIdList = secondCommentList.stream().map(VideoComment::getUserId).collect(Collectors.toSet());
+            firstCommentUserIdList.addAll(secondCommentUserIdList);
+            //批量查询用户基本信息
+            List<UserInfo> userInfoList = userService.selectUserInfoBy(firstCommentUserIdList);
+            Map<Long,UserInfo> userInfoMap = userInfoList.stream().collect(Collectors.toMap(UserInfo::getUserId, userInfo -> userInfo));
+            firstCommentList.forEach(item -> {
+                Long id = item.getId();
+                List<VideoComment> childList = new ArrayList<>();
+                secondCommentList.forEach(second ->{
+                    if(id.equals(second.getRootId())){
+                        second.setUserInfo(userInfoMap.get(second.getUserId()));
+                        second.setReplyUserInfo(userInfoMap.get(second.getReplyUserId()));
+                        childList.add(second);
+                    }
+                });
+                item.setChildList(childList);
+                item.setUserInfo(userInfoMap.get(item.getUserId()));
+            });
+        }
+        return new PageResult<>(total,firstCommentList);
     }
 }

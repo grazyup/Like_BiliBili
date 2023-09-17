@@ -101,4 +101,14 @@ public interface VideoService {
      * @param videoComment 评论对象
      */
     void addVideoComment(VideoComment videoComment);
+
+
+    /**
+     * 分页获取评论
+     * @param current 当前页
+     * @param size 一页显示的数据条数
+     * @param videoId 视频id
+     * @return 分页数据
+     */
+    PageResult<VideoComment> pageListVideoComment(Integer current, Integer size, Long videoId);
 }
