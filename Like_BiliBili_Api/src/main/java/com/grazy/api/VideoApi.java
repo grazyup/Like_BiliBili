@@ -5,6 +5,7 @@ import com.grazy.domain.*;
 import com.grazy.support.UserSupport;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -209,4 +210,18 @@ public class VideoApi {
         PageResult<VideoComment> videoCommentPageResult = videoService.pageListVideoComment(current,size,videoId);
         return ResultResponse.success("获取成功！",videoCommentPageResult);
     }
+
+
+    /**
+     * 获取视频详情
+     * @param videoId 视频id
+     * @return 视频详情信息
+     */
+    @GetMapping("/video-details")
+    public ResultResponse<Map<String,Object>> getVideoDetail(@RequestParam Long videoId){
+        Map<String,Object> videoDetailMap = videoService.getVideoDetail(videoId);
+        return ResultResponse.success("获取成功!",videoDetailMap);
+    }
+
+
 }

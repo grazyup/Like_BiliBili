@@ -111,4 +111,12 @@ public interface VideoService {
      * @return 分页数据
      */
     PageResult<VideoComment> pageListVideoComment(Integer current, Integer size, Long videoId);
+
+
+    /**
+     * 获取视频详情
+     * @param videoId 视频id
+     * @return 视频详情信息
+     */
+    Map<String, Object> getVideoDetail(Long videoId);
 }

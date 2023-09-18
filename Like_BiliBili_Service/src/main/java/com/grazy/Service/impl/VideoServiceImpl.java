@@ -285,4 +285,18 @@ public class VideoServiceImpl implements VideoService {
         }
         return new PageResult<>(total,firstCommentList);
     }
+
+
+    @Override
+    public Map<String, Object> getVideoDetail(Long videoId) {
+        Video dbVideo = videoMapper.selectVideoByVideoId(videoId);
+        Long userId = dbVideo.getUserId();
+        UserInfo userInfo = userService.getUserDateById(userId).getUserInfo();
+        return new HashMap<String,Object>(){{
+            put("video",dbVideo);
+            put("userInfo",userInfo);
+        }};
+    }
+
+
 }
