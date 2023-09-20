@@ -24,13 +24,13 @@ public class ResultResponse<T> {
 
 
     public ResultResponse(String msg){
-        this.code = "200";
+        this.code = "0";
         this.msg = msg;
         this.data = null;
     }
 
     public ResultResponse(String msg,T data){
-        this.code = "200";
+        this.code = "0";
         this.msg = msg;
         this.data = data;
     }

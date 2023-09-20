@@ -5,7 +5,6 @@ import com.grazy.domain.*;
 import com.grazy.support.UserSupport;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -53,11 +52,11 @@ public class VideoApi {
 
     /**
      * 分片（拖动进度条）在线观看视频（以二进制流的形式在response中将视频输出） --- 与下载文件视频类似
-     * @param path 视频的相对路径
+     * @param url 视频的相对路径
      */
     @GetMapping("/video-slices")
-    public void viewVideoOnlineBySlices(HttpServletRequest request, HttpServletResponse response, String path){
-        videoService.viewVideoOnlineBySlices(request,response,path);
+    public void viewVideoOnlineBySlices(HttpServletRequest request, HttpServletResponse response, String url){
+        videoService.viewVideoOnlineBySlices(request,response,url);
     }
 
 

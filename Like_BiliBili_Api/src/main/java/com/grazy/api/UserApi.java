@@ -37,7 +37,6 @@ public class UserApi {
     @GetMapping("/rsa-pks")
     public ResultResponse<String> getPublicKey(){
         String publicKeyStr = RSAUtil.getPublicKeyStr();
-//        return ResultResponse.success("公钥获取成功",publicKeyStr);
         return new ResultResponse<>("0","公钥获取成功",publicKeyStr);
     }
 

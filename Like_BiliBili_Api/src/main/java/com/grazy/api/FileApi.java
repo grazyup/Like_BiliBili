@@ -57,6 +57,14 @@ public class FileApi {
 
 
     /**
+     * 普通文件直接上传
+     */
+    @PostMapping("/upFile")
+    public void upFile(MultipartFile file) throws Exception {
+        fastDFSUtil.uploadCommonFile(file);
+    }
+
+    /**
      *  获取文件MD5加密字符串
      * @param file 文件
      * @return 加密字符串

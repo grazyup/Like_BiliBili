@@ -19,7 +19,7 @@ public class Video {
     private Long UserId;
 
     //视频链接地址
-    private String Url;
+    private String url;
 
     //封面
     private String thumbnail;
