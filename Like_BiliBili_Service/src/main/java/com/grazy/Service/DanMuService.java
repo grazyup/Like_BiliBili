@@ -39,5 +39,5 @@ public interface DanMuService {
      * @param endTime 结束时间
      * @return 弹幕数据
      */
-    List<DanMu> getDanMUData(Long videoId, String startTime, String endTime);
+    List<DanMu> getDanMUData(Long videoId, String startTime, String endTime) throws Exception;
 }

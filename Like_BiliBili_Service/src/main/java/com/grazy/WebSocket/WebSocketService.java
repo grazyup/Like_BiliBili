@@ -7,11 +7,13 @@ import com.grazy.domain.DanMu;
 import com.grazy.utils.RocketMqUtil;
 import com.grazy.utils.TokenUtil;
 import com.mysql.cj.util.StringUtils;
+import lombok.Data;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.apache.rocketmq.common.message.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import javax.websocket.OnClose;
@@ -34,6 +36,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 
 @Component
+@Data
 @ServerEndpoint("/imserver/{token}")
 public class WebSocketService {
 
@@ -48,6 +51,7 @@ public class WebSocketService {
     private String sessionId;
 
     private Long userId;
+
 
     /**
      * 多例模式的bean注入
@@ -78,7 +82,7 @@ public class WebSocketService {
         }else{
             WEBSOCKET_MAP.put(sessionId,this);
             //更新在线人数
-            ONLINE_COUNT.incrementAndGet();
+            ONLINE_COUNT.getAndIncrement();
         }
         //打印日志
         logger.info("用户连接成功！" + session + " 当前在线人数： " + ONLINE_COUNT.get());
@@ -98,9 +102,9 @@ public class WebSocketService {
     public void closeConnection(){
         if(WEBSOCKET_MAP.containsKey(this.sessionId)){
             WEBSOCKET_MAP.remove(this.sessionId);
-            ONLINE_COUNT.getAndIncrement();
+            ONLINE_COUNT.getAndDecrement();
         }
-        logger.info("用户退出：" + sessionId + "当前在线人数为：" + ONLINE_COUNT.get());
+        logger.info("用户退出：" + sessionId + " 当前在线人数为：" + ONLINE_COUNT.get());
     }
 
 
@@ -146,21 +150,27 @@ public class WebSocketService {
 
 
     /**
-     * 推送弹幕
+     * 推送信息到前台
      * @param message 弹幕信息
-     * @throws IOException 异常
      */
     public void sentMessage(String message) throws IOException {
         this.session.getBasicRemote().sendText(message);
     }
 
 
-    public Session getSession() {
-        return this.session;
-    }
-
-
-    public String getSessionId(){
-        return this.sessionId;
+    /**
+     * 实时获取在线观看人数
+     */
+    @Scheduled(fixedDelay = 5000)  //指定时间间隔，例如：5秒
+    public void noticeOnlineCount() throws Exception{
+        for(Map.Entry<String,WebSocketService> entry: WEBSOCKET_MAP.entrySet()){
+            WebSocketService webSocketService = entry.getValue();
+            if(webSocketService.session.isOpen()){
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("onlineCount", ONLINE_COUNT);
+                jsonObject.put("msg", "当前在线人数为" + ONLINE_COUNT);
+                webSocketService.sentMessage(jsonObject.toJSONString());
+            }
+        }
     }
 }
