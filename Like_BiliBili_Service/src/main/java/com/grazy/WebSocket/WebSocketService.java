@@ -1,10 +1,14 @@
 package com.grazy.WebSocket;
 
 import com.alibaba.fastjson.JSONObject;
+import com.grazy.Common.MQConstant;
 import com.grazy.Service.DanMuService;
 import com.grazy.domain.DanMu;
+import com.grazy.utils.RocketMqUtil;
 import com.grazy.utils.TokenUtil;
 import com.mysql.cj.util.StringUtils;
+import org.apache.rocketmq.client.producer.DefaultMQProducer;
+import org.apache.rocketmq.common.message.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
@@ -17,6 +21,7 @@ import javax.websocket.Session;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -36,7 +41,7 @@ public class WebSocketService {
 
     private static final AtomicInteger ONLINE_COUNT = new AtomicInteger(0);
 
-    private static final ConcurrentHashMap<String,WebSocketService> WEBSOCKET_MAP = new ConcurrentHashMap<>();
+    public static final ConcurrentHashMap<String,WebSocketService> WEBSOCKET_MAP = new ConcurrentHashMap<>();
 
     private Session session;
 
@@ -100,7 +105,7 @@ public class WebSocketService {
 
 
     /**
-     * 接收弹幕
+     * 接收弹幕信息
      * @param message 弹幕信息
      */
     @OnMessage
@@ -111,10 +116,13 @@ public class WebSocketService {
                 //群发弹幕消息给当前在线观看用户
                 for (Map.Entry<String, WebSocketService> entry : WEBSOCKET_MAP.entrySet()) {
                     WebSocketService webSocketService = entry.getValue();
-                    if (webSocketService.session.isOpen()) {
-                        //对开启连接的用户推送消息
-                        webSocketService.sentMessage(message);
-                    }
+                    //使用消息队列推送弹幕信息
+                    JSONObject jsonObject = new JSONObject();
+                    jsonObject.put("sessionId",webSocketService.getSessionId());
+                    jsonObject.put("message",message);
+                    Message mqMessage = new Message(MQConstant.TOPIC_DANMU, jsonObject.toJSONString().getBytes(StandardCharsets.UTF_8));
+                    //调用异步发送信息
+                    RocketMqUtil.asyncSendMsg((DefaultMQProducer) APPLICATION_CONTEXT.getBean("DanMuProducer"),mqMessage);
                 }
                 if(userId != null){
                     //保存弹幕到数据库
@@ -123,7 +131,9 @@ public class WebSocketService {
                     danMu.setUserId(userId);
                     //获取弹幕业务层
                     DanMuService danMuService = (DanMuService) APPLICATION_CONTEXT.getBean("DanMuService");
-                    danMuService.addDanMu(danMu);
+                    //danMuService.addDanMu(danMu);
+                    //异步添加弹幕到数据库
+                    danMuService.asyncAddDanMu(danMu);
                     //保存到Redis中
                     danMuService.addDanMuToRedis(danMu);
                 }
@@ -135,9 +145,22 @@ public class WebSocketService {
     }
 
 
-    private void sentMessage(String message) throws IOException {
+    /**
+     * 推送弹幕
+     * @param message 弹幕信息
+     * @throws IOException 异常
+     */
+    public void sentMessage(String message) throws IOException {
         this.session.getBasicRemote().sendText(message);
     }
 
 
+    public Session getSession() {
+        return this.session;
+    }
+
+
+    public String getSessionId(){
+        return this.sessionId;
+    }
 }

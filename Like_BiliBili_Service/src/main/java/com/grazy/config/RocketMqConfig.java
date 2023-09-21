@@ -2,8 +2,10 @@ package com.grazy.config;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.grazy.Common.UserMomentConstant;
+import com.grazy.Common.MQConstant;
 import com.grazy.Service.UserFollowingService;
+import com.grazy.WebSocket.WebSocketService;
+import com.grazy.domain.DanMu;
 import com.grazy.domain.UserFollowing;
 import com.grazy.domain.UserMoment;
 import com.mysql.cj.util.StringUtils;
@@ -21,6 +23,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.core.RedisTemplate;
 
 import javax.annotation.Resource;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,7 +52,7 @@ public class RocketMqConfig {
      */
     @Bean("momentsProducer")
     public DefaultMQProducer momentsProducer() throws MQClientException {
-        DefaultMQProducer mqProducer = new DefaultMQProducer(UserMomentConstant.GROUP_MOMENTS);   // 参数是分组名称
+        DefaultMQProducer mqProducer = new DefaultMQProducer(MQConstant.GROUP_MOMENTS);   // 参数是分组名称
         mqProducer.setNamesrvAddr(nameServerAddress);
         mqProducer.start();
         return mqProducer;
@@ -61,10 +64,10 @@ public class RocketMqConfig {
      */
     @Bean("momentsCustomer")
     public DefaultMQPushConsumer momentsCustomer() throws MQClientException {
-        DefaultMQPushConsumer mqPushConsumer = new DefaultMQPushConsumer(UserMomentConstant.GROUP_MOMENTS);
+        DefaultMQPushConsumer mqPushConsumer = new DefaultMQPushConsumer(MQConstant.GROUP_MOMENTS);
         mqPushConsumer.setNamesrvAddr(nameServerAddress);
         //订阅生产者
-        mqPushConsumer.subscribe(UserMomentConstant.TOPIC_MOMENTS,"*");
+        mqPushConsumer.subscribe(MQConstant.TOPIC_MOMENTS,"*");
         
         //设置监听生产者的动态消息
         mqPushConsumer.registerMessageListener(new MessageListenerConcurrently() {
@@ -108,5 +111,59 @@ public class RocketMqConfig {
         });
         mqPushConsumer.start();
         return mqPushConsumer;
+    }
+
+
+    /**
+     * 消息队列弹幕生产者实例
+     */
+    @Bean("danMusProducer")
+    public DefaultMQProducer danMusProducer() throws Exception{
+        DefaultMQProducer producer = new DefaultMQProducer(MQConstant.GROUP_DANMU);
+        producer.setNamesrvAddr(nameServerAddress);
+        producer.start();
+        return producer;
+    }
+
+
+    /**
+     * 消息队列弹幕消费实例
+     */
+    @Bean("danMuCustomer")
+    public DefaultMQPushConsumer danMusCustomer() throws Exception{
+        DefaultMQPushConsumer consumer = new DefaultMQPushConsumer(MQConstant.GROUP_DANMU);
+        consumer.setNamesrvAddr(nameServerAddress);
+        //订阅一个或者多个topic,以及Tag来过滤需要消费的消息
+        consumer.subscribe(MQConstant.TOPIC_DANMU,"*");
+        // 注册回调实现类来处理从broker拉取回来的消息（监听生产者的消息）
+        consumer.registerMessageListener(new MessageListenerConcurrently() {
+            //监听方法
+            @Override
+            public ConsumeConcurrentlyStatus consumeMessage(List<MessageExt> list, ConsumeConcurrentlyContext consumeConcurrentlyContext) {
+                //获取一个监听到的弹幕信息
+                MessageExt messageExt = list.get(0);
+                byte[] body = messageExt.getBody();
+                //字节转换为对象
+                String bodyString = JSONObject.toJSONString(body);
+                JSONObject jsonObject = JSONObject.parseObject(bodyString);
+                //获取弹幕信息
+                String sessionId = jsonObject.getString("sessionId");
+                String message = jsonObject.getString("message");
+                WebSocketService webSocketService = WebSocketService.WEBSOCKET_MAP.get(sessionId);
+
+                if(webSocketService.getSession().isOpen()){
+                    //弹幕群发推送给全部在线用户
+                    try {
+                        webSocketService.sentMessage(message);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+                //返回消息已被成功消费
+                return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+            }
+        });
+        consumer.start();
+        return consumer;
     }
 }

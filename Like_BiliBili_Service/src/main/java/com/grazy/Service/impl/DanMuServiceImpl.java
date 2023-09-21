@@ -8,6 +8,7 @@ import com.grazy.mapper.DanMuMapper;
 import com.mysql.cj.util.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -34,6 +35,13 @@ public class DanMuServiceImpl implements DanMuService {
 
     @Override
     public void addDanMu(DanMu danMu) {
+        danMuMapper.insertDanMu(danMu);
+    }
+
+
+    @Override
+    @Async
+    public void asyncAddDanMu(DanMu danMu) {
         danMuMapper.insertDanMu(danMu);
     }
 

@@ -20,6 +20,12 @@ public interface DanMuService {
 
 
     /**
+     * 异步添加弹幕到数据库
+     * @param danMu 弹幕对象
+     */
+    void asyncAddDanMu(DanMu danMu);
+
+    /**
      * 添加弹幕到Redis缓存
      * @param danMu 弹幕对象
      */

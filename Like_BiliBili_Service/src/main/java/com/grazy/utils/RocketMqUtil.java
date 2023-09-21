@@ -38,7 +38,7 @@ public class RocketMqUtil {
                 public void onSuccess(SendResult sendResult) {
                     //计时器减一
                     downLatch2.countDown();
-                    System.out.println(sendResult.getMsgId());
+                    System.out.println("异步发送消息成功,消息Id为： " + sendResult.getMsgId());
                 }
 
                 @Override

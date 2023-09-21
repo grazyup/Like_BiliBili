@@ -2,7 +2,7 @@ package com.grazy.Service.impl;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.grazy.Common.UserMomentConstant;
+import com.grazy.Common.MQConstant;
 import com.grazy.Service.UserMomentService;
 import com.grazy.domain.UserMoment;
 import com.grazy.mapper.UserMomentMapper;
@@ -42,12 +42,12 @@ public class UserMomentServiceImpl implements UserMomentService {
     @Override
     public void addUserMoments(UserMoment userMoment) throws Exception{
         if(StringUtils.isNullOrEmpty(userMoment.getType())){
-            userMoment.setType(UserMomentConstant.DEFAULT_MOMENTS_TYPE);
+            userMoment.setType(MQConstant.DEFAULT_MOMENTS_TYPE);
         }
         userMoment.setCreateTime(new Date());
         userMomentMapper.insertMoment(userMoment);
         //消息队列发布动态消息
-        Message message = new Message(UserMomentConstant.TOPIC_MOMENTS, JSONObject.toJSONString(userMoment).getBytes(StandardCharsets.UTF_8));
+        Message message = new Message(MQConstant.TOPIC_MOMENTS, JSONObject.toJSONString(userMoment).getBytes(StandardCharsets.UTF_8));
         RocketMqUtil.syncSendMsg((DefaultMQProducer)applicationContext.getBean("momentsProducer"), message);
     }
 
