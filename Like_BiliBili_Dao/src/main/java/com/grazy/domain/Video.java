@@ -1,6 +1,10 @@
 package com.grazy.domain;
 
 import lombok.Data;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.elasticsearch.annotations.Document;
+import org.springframework.data.elasticsearch.annotations.Field;
+import org.springframework.data.elasticsearch.annotations.FieldType;
 
 import java.util.Date;
 import java.util.List;
@@ -12,8 +16,10 @@ import java.util.List;
  */
 
 @Data
+@Document(indexName = "videos")
 public class Video {
 
+    @Id
     private Long Id;
 
     private Long UserId;
@@ -25,6 +31,7 @@ public class Video {
     private String thumbnail;
 
     //标题
+    @Field(type = FieldType.Text)
     private String title;
 
     // 0自制 1转载
@@ -40,10 +47,13 @@ public class Video {
     private List<VideoTag> videoTagList;
 
     //简介
+    @Field(type = FieldType.Text)
     private String description;
 
+    @Field(type = FieldType.Date)
     private Date createTime;
 
+    @Field(type = FieldType.Date)
     private Date updateTime;
 
 }

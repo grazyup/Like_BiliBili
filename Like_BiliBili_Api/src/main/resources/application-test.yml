@@ -47,3 +47,8 @@ fdfs:
   tracker-list: 192.168.195.100:22122
   http:
     storage-add: http://192.168.195.100:8888/group1/
+
+
+#ElasticSearch
+elasticesearch:
+  url: 192.168.195.100:9200
