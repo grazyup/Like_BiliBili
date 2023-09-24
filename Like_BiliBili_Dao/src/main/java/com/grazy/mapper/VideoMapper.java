@@ -6,6 +6,7 @@ import org.apache.ibatis.annotations.Param;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @Author: grazy
@@ -63,4 +64,10 @@ public interface VideoMapper {
     List<VideoComment> pageVideoCommentByVideoId(@Param("current") Integer current, @Param("size") Integer size, @Param("videoId") Long videoId);
 
     List<VideoComment> batchGetVideoCommentsByRootIds(List<Long> firstCommentIdList);
+
+    VideoView selectVideoViews(Map<String, Object> params);
+
+    void insertVideoViews(VideoView videoView);
+
+    Integer selectVideoViewCounts(Long videoId);
 }

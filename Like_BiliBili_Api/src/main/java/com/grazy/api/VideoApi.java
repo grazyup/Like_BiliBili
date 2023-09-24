@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -228,5 +229,34 @@ public class VideoApi {
         return ResultResponse.success("获取成功!",videoDetailMap);
     }
 
+
+    /**
+     * 添加播放记录
+     * @param videoView 视频播放记录对象
+     * @param request 请求参数对象
+     * @return 响应结果
+     */
+    @PostMapping("/video-views")
+    public ResultResponse<String> addVideoViews(@RequestBody VideoView videoView, HttpServletRequest request){
+        Long userId;
+        try{
+            videoView.setUserId(userSupport.getCurrentUserId());
+            videoService.addVideoViews(videoView,request);
+        }catch (Exception e){
+            videoService.addVideoViews(videoView,request);
+        }
+        return ResultResponse.success("添加成功！");
+    }
+
+
+    /**
+     * 视频播放量
+     * @param videoId 视频id
+     * @return 播放量
+     */
+    @GetMapping("/video-view-counts")
+    public ResultResponse<Integer> getVideoViewCounts(@RequestParam Long videoId){
+        return ResultResponse.success("获取成功",videoService.getVideoViewCounts(videoId));
+    }
 
 }

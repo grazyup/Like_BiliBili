@@ -7,12 +7,15 @@ import com.grazy.Service.VideoService;
 import com.grazy.domain.*;
 import com.grazy.mapper.VideoMapper;
 import com.grazy.utils.FastDFSUtil;
+import com.grazy.utils.IpUtil;
+import eu.bitwalker.useragentutils.UserAgent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -296,6 +299,48 @@ public class VideoServiceImpl implements VideoService {
             put("video",dbVideo);
             put("userInfo",userInfo);
         }};
+    }
+
+
+    @Override
+    public void addVideoViews(VideoView videoView, HttpServletRequest request) {
+        Long userId = videoView.getUserId();
+        Long videoId = videoView.getVideoId();
+        //生成clientId
+        String agent = request.getHeader("User-Agent");
+        UserAgent userAgent = UserAgent.parseUserAgentString(agent);
+        //区分游客的规则： 操作系统 + 浏览器 + Ip  --> clientId + Ip
+        String clientId = String.valueOf(userAgent.getId());
+        String ip = IpUtil.getIP(request);
+        Map<String, Object> params = new HashMap<>();
+        if(userId == null){
+            //当前为游客模式
+            params.put("clientId",clientId);
+            params.put("ip",ip);
+        }else{
+            //当前为登录模式
+            params.put("userId",userId);
+        }
+        Date now = new Date();
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        //添加今日时间
+        params.put("today",simpleDateFormat.format(now));
+        params.put("videoId", videoId);
+        //查询今日观看记录是否已存在
+        VideoView dbVideoViews = videoMapper.selectVideoViews(params);
+        if(dbVideoViews == null){
+            videoView.setIp(ip);
+            videoView.setClientId(clientId);
+            videoView.setCreateTime(new Date());
+            //添加数据
+            videoMapper.insertVideoViews(videoView);
+        }
+    }
+
+
+    @Override
+    public Integer getVideoViewCounts(Long videoId) {
+        return videoMapper.selectVideoViewCounts(videoId);
     }
 
 

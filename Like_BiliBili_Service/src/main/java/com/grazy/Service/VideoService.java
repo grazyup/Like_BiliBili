@@ -119,4 +119,20 @@ public interface VideoService {
      * @return 视频详情信息
      */
     Map<String, Object> getVideoDetail(Long videoId);
+
+
+    /**
+     * 添加播放记录（不是用户账号的播放记录,是系统的记录）
+     * @param videoView 视频播放记录对象
+     * @param request 请求参数对象
+     */
+    void addVideoViews(VideoView videoView, HttpServletRequest request);
+
+
+    /**
+     * 获取视频播放量
+     * @param videoId 视频id
+     * @return 播放量
+     */
+    Integer getVideoViewCounts(Long videoId);
 }
