@@ -50,5 +50,5 @@ fdfs:
 
 
 #ElasticSearch
-elasticesearch:
+elasticsearch:
   url: 192.168.195.100:9200

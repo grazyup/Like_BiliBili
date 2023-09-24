@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.grazy.Common.UserConstant;
 import com.grazy.Exception.CustomException;
+import com.grazy.Service.ElasticsearchService;
 import com.grazy.Service.UserRoleService;
 import com.grazy.Service.UserService;
 import com.grazy.auth.RefreshTokenDetail;
@@ -37,6 +38,9 @@ public class userServiceImpl implements UserService {
 
     @Autowired
     private UserRoleService userRoleService;
+
+    @Autowired
+    private ElasticsearchService elasticsearchService;
 
 
     @Override
@@ -76,6 +80,8 @@ public class userServiceImpl implements UserService {
                 null,UserConstant.GENDER_MALE, UserConstant.DEFAULT_BIRTH,now,null,null);
         //数据添加到用户基本信息表中
         userMapper.addUserInfo(userInfo);
+        //添加用户基本信息到es中
+        elasticsearchService.addUserInfo(userInfo);
         //添加用户默认等级角色 --> 在用户-角色关联表中添加新的一条关联数据，将新注册的账号和角色等级关联
         userRoleService.addUserRoleData(user.getId());
     }

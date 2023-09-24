@@ -3,6 +3,10 @@ package com.grazy.domain;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.elasticsearch.annotations.Document;
+import org.springframework.data.elasticsearch.annotations.Field;
+import org.springframework.data.elasticsearch.annotations.FieldType;
 
 import java.util.Date;
 
@@ -15,8 +19,10 @@ import java.util.Date;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Document(indexName = "user-infos")
 public class UserInfo {
 
+    @Id
     private Long id;
 
     private Long userId;
@@ -24,6 +30,7 @@ public class UserInfo {
     /**
      * 昵称
      */
+    @Field(type = FieldType.Text)
     private String nick;
 
     private String avatar;
@@ -37,8 +44,10 @@ public class UserInfo {
 
     private String birth;
 
+    @Field(type = FieldType.Date)
     private Date createTime;
 
+    @Field(type = FieldType.Date)
     private Date updateTime;
 
     /**

@@ -1,5 +1,6 @@
 package com.grazy.api;
 
+import com.grazy.Service.ElasticsearchService;
 import com.grazy.Service.VideoService;
 import com.grazy.domain.*;
 import com.grazy.support.UserSupport;
@@ -25,6 +26,9 @@ public class VideoApi {
     @Autowired
     private UserSupport userSupport;
 
+    @Autowired
+    private ElasticsearchService elasticsearchService;
+
 
     /**
      * 视频投稿
@@ -35,6 +39,8 @@ public class VideoApi {
     public ResultResponse<String> addVideos(@RequestBody Video video){
         video.setUserId(userSupport.getCurrentUserId());
         videoService.addVideos(video);
+        //在es中添加视频信息（注意：要在添加进数据库之后才能添加到es中，因为需要对象id作为标识）
+        elasticsearchService.addVideo(video);
         return ResultResponse.success("投稿成功！");
     }
 
