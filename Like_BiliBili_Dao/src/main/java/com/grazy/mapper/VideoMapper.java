@@ -70,4 +70,8 @@ public interface VideoMapper {
     void insertVideoViews(VideoView videoView);
 
     Integer selectVideoViewCounts(Long videoId);
+
+    List<UserPreference> selectAllUserPreference();
+
+    List<Video> batchGetVideosByIds(List<Long> itemIds);
 }

@@ -9,6 +9,19 @@ import com.grazy.mapper.VideoMapper;
 import com.grazy.utils.FastDFSUtil;
 import com.grazy.utils.IpUtil;
 import eu.bitwalker.useragentutils.UserAgent;
+import org.apache.mahout.cf.taste.common.TasteException;
+import org.apache.mahout.cf.taste.impl.common.FastByIDMap;
+import org.apache.mahout.cf.taste.impl.model.GenericDataModel;
+import org.apache.mahout.cf.taste.impl.model.GenericPreference;
+import org.apache.mahout.cf.taste.impl.model.GenericUserPreferenceArray;
+import org.apache.mahout.cf.taste.impl.neighborhood.NearestNUserNeighborhood;
+import org.apache.mahout.cf.taste.impl.recommender.GenericItemBasedRecommender;
+import org.apache.mahout.cf.taste.impl.recommender.GenericUserBasedRecommender;
+import org.apache.mahout.cf.taste.impl.similarity.UncenteredCosineSimilarity;
+import org.apache.mahout.cf.taste.model.DataModel;
+import org.apache.mahout.cf.taste.model.PreferenceArray;
+import org.apache.mahout.cf.taste.recommender.RecommendedItem;
+import org.apache.mahout.cf.taste.similarity.ItemSimilarity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -343,5 +356,67 @@ public class VideoServiceImpl implements VideoService {
         return videoMapper.selectVideoViewCounts(videoId);
     }
 
+
+    @Override
+    public List<Video> recommend(Long currentUserId) throws TasteException {
+        //获取全部用户的偏好数据
+        List<UserPreference> userPreferenceList = videoMapper.selectAllUserPreference();
+        //创建数据模型
+        DataModel dataModel = this.createDataModel(userPreferenceList);
+        //获取用户相似程度
+        UncenteredCosineSimilarity similarity = new UncenteredCosineSimilarity(dataModel);
+        //获取用户邻居（参数 : 2 是想要获取用户邻居的数量）
+        NearestNUserNeighborhood userNeighborhood = new NearestNUserNeighborhood(2, similarity, dataModel);
+        //构建推荐器
+        GenericUserBasedRecommender recommender = new GenericUserBasedRecommender(dataModel, userNeighborhood, similarity);
+        //推荐视频（参数: 5 表示给用户推荐的商品数量）
+        List<RecommendedItem> recommendedItems = recommender.recommend(currentUserId, 5);
+        //获取的是算法所推荐的视频的videoId集合
+        List<Long> itemIds = recommendedItems.stream().map(RecommendedItem::getItemID).collect(Collectors.toList());
+        //返回根据推荐的视频查询到的视频数据
+        return videoMapper.batchGetVideosByIds(itemIds);
+    }
+
+
+    @Override
+    public List<Video> recommendByItem(Long userId, Long itemId, int howMany) throws TasteException {
+        List<UserPreference> list = videoMapper.selectAllUserPreference();
+        //创建数据模型
+        DataModel dataModel = this.createDataModel(list);
+        //获取内容相似程度
+        ItemSimilarity similarity = new UncenteredCosineSimilarity(dataModel);
+        GenericItemBasedRecommender genericItemBasedRecommender = new GenericItemBasedRecommender(dataModel, similarity);
+        // 物品推荐相拟度，计算两个物品同时出现的次数，次数越多任务的相拟度越高
+        List<Long> itemIds = genericItemBasedRecommender.recommendedBecause(userId, itemId, howMany)
+                .stream()
+                .map(RecommendedItem::getItemID)
+                .collect(Collectors.toList());
+        //推荐视频
+        return videoMapper.batchGetVideosByIds(itemIds);
+    }
+
+
+    /**
+     * 创建数据模型
+     * @param userPreferenceList 用户偏好列表
+     * @return 数据模型
+     */
+    private DataModel createDataModel(List<UserPreference> userPreferenceList) {
+        FastByIDMap<PreferenceArray> fastByIdMap = new FastByIDMap<>();
+        //List转换为map,UserId作为键值对的key,value是每个用户对应的全部视频操作评分
+        Map<Long, List<UserPreference>> preferenceMap = userPreferenceList.stream().collect(Collectors.groupingBy(UserPreference::getUserId));
+        //提取出全部的value存储到Set视图中
+        Collection<List<UserPreference>> list = preferenceMap.values();
+        for(List<UserPreference> userPreferences: list){
+            GenericPreference[] array = new GenericPreference[userPreferences.size()];
+            for(int i = 0; i < userPreferences.size(); i++){
+                UserPreference userPreference = userPreferences.get(i);
+                GenericPreference item = new GenericPreference(userPreference.getUserId(), userPreference.getVideoId(), userPreference.getValue());
+                array[i] = item;
+            }
+            fastByIdMap.put(array[0].getUserID(),new GenericUserPreferenceArray(Arrays.asList(array)));
+        }
+        return new GenericDataModel(fastByIdMap);
+    }
 
 }

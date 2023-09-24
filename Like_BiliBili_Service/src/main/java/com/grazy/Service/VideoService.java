@@ -1,9 +1,11 @@
 package com.grazy.Service;
 
 import com.grazy.domain.*;
+import org.apache.mahout.cf.taste.common.TasteException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -135,4 +137,20 @@ public interface VideoService {
      * @return 播放量
      */
     Integer getVideoViewCounts(Long videoId);
+
+
+    /**
+     * 基于用户的协同推荐
+     * @param currentUserId 用户id
+     */
+    List<Video> recommend(Long currentUserId) throws TasteException;
+
+
+    /**
+     * 基于内容的协同推荐
+     * @param userId 用户id
+     * @param itemId 参考内容id（根据该内容进行相似内容推荐）
+     * @param howMany 需要推荐的数量
+     */
+    List<Video> recommendByItem(Long userId, Long itemId, int howMany) throws TasteException;
 }

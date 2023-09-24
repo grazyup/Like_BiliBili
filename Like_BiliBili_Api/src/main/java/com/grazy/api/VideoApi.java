@@ -4,6 +4,7 @@ import com.grazy.Service.ElasticsearchService;
 import com.grazy.Service.VideoService;
 import com.grazy.domain.*;
 import com.grazy.support.UserSupport;
+import org.apache.mahout.cf.taste.common.TasteException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -258,5 +259,18 @@ public class VideoApi {
     public ResultResponse<Integer> getVideoViewCounts(@RequestParam Long videoId){
         return ResultResponse.success("获取成功",videoService.getVideoViewCounts(videoId));
     }
+
+
+    /**
+     * 视频内容推荐
+     * @return 根据偏好算法推荐的视频数据列表
+     * @throws TasteException 异常
+     */
+    @GetMapping("/recommendations")
+    public ResultResponse<List<Video>> recommend() throws TasteException{
+        List<Video> recommendVideoList =videoService.recommend(userSupport.getCurrentUserId());
+        return ResultResponse.success("推荐成功!",recommendVideoList);
+    }
+
 
 }

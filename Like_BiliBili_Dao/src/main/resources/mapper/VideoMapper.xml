@@ -277,4 +277,34 @@
             videoId = #{videoId}
     </select>
 
+
+    <select id="selectAllUserPreference" resultType="com.grazy.domain.UserPreference">
+        select
+            userId,
+            videoId,
+            sum(case operationType
+                    when '0' then 6
+                    when '1' then 2
+                    when '2' then 2
+                    else 0 end
+            )as 'value'
+        from
+            t_video_operation
+        group by
+            userId,viderId
+    </select>
+
+
+    <select id="batchGetVideosByIds" resultType="com.grazy.domain.Video">
+        select
+            *
+        from
+            t_video
+        where
+            id in
+            <foreach collection="itemIds" item="videoId" separator="," open="(" close=")">
+                #{videoId}
+            </foreach>
+    </select>
+
 </mapper>
