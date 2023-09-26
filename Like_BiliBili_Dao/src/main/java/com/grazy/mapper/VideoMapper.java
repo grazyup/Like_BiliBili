@@ -74,4 +74,6 @@ public interface VideoMapper {
     List<UserPreference> selectAllUserPreference();
 
     List<Video> batchGetVideosByIds(List<Long> itemIds);
+
+    void batchAddVideoBinaryPictures(List<VideoBinaryPicture> pictures);
 }

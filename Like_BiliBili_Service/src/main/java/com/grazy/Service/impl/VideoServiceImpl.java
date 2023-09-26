@@ -1,12 +1,14 @@
 package com.grazy.Service.impl;
 
 import com.grazy.Exception.CustomException;
+import com.grazy.Service.FileService;
 import com.grazy.Service.UserCoinsService;
 import com.grazy.Service.UserService;
 import com.grazy.Service.VideoService;
 import com.grazy.domain.*;
 import com.grazy.mapper.VideoMapper;
 import com.grazy.utils.FastDFSUtil;
+import com.grazy.utils.ImageUtil;
 import com.grazy.utils.IpUtil;
 import eu.bitwalker.useragentutils.UserAgent;
 import org.apache.mahout.cf.taste.common.TasteException;
@@ -22,12 +24,21 @@ import org.apache.mahout.cf.taste.model.DataModel;
 import org.apache.mahout.cf.taste.model.PreferenceArray;
 import org.apache.mahout.cf.taste.recommender.RecommendedItem;
 import org.apache.mahout.cf.taste.similarity.ItemSimilarity;
+import org.bytedeco.javacv.FFmpegFrameGrabber;
+import org.bytedeco.javacv.Frame;
+import org.bytedeco.javacv.Java2DFrameConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -53,7 +64,15 @@ public class VideoServiceImpl implements VideoService {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private FileService fileService;
+
+    @Autowired
+    private ImageUtil imageUtil;
+
     private static final Long DEFAULT_COLLECTION_GROUP = 0L;
+
+    private static final int FRAME_NO = 256;
 
     @Override
     @Transactional
@@ -419,4 +438,53 @@ public class VideoServiceImpl implements VideoService {
         return new GenericDataModel(fastByIdMap);
     }
 
+
+    public List<VideoBinaryPicture> convertVideoToImage(Long videoId, String fileMd5) throws Exception{
+        MyFile file = fileService.getFileByMd5(fileMd5);
+        String filePath = "D:/java_SpringBoot/Project源码资料/fastDFS_TempFile" + videoId + "." + file.getType();
+        fastDFSUtil.downLoadFile(file.getUrl(), filePath);
+        FFmpegFrameGrabber fFmpegFrameGrabber = FFmpegFrameGrabber.createDefault(filePath);
+        fFmpegFrameGrabber.start();
+        int ffLength = fFmpegFrameGrabber.getLengthInFrames();
+        Frame frame;
+        Java2DFrameConverter converter = new Java2DFrameConverter();
+        int count = 1;
+        List<VideoBinaryPicture> pictures = new ArrayList<>();
+        for(int i=1; i<= ffLength; i ++){
+            long timestamp = fFmpegFrameGrabber.getTimestamp();
+            frame = fFmpegFrameGrabber.grabImage();
+            if(count == i){
+                if(frame == null){
+                    throw new CustomException("无效帧");
+                }
+                BufferedImage bufferedImage = converter.getBufferedImage(frame);
+                ByteArrayOutputStream os = new ByteArrayOutputStream();
+                ImageIO.write(bufferedImage, "png", os);
+                InputStream inputStream = new ByteArrayInputStream(os.toByteArray());
+                //输出黑白剪影文件
+                java.io.File outputFile = java.io.File.createTempFile("convert-" + videoId + "-", ".png");
+                BufferedImage binaryImg = imageUtil.getBodyOutline(bufferedImage, inputStream);
+                ImageIO.write(binaryImg, "png", outputFile);
+                //有的浏览器或网站需要把图片白色的部分转为透明色，使用以下方法可实现
+                imageUtil.transferAlpha(outputFile, outputFile);
+                //上传视频剪影文件
+                String imgUrl = fastDFSUtil.uploadCommonFile(outputFile, "png");
+                VideoBinaryPicture videoBinaryPicture = new VideoBinaryPicture();
+                videoBinaryPicture.setFrameNo(i);
+                videoBinaryPicture.setUrl(imgUrl);
+                videoBinaryPicture.setVideoId(videoId);
+                videoBinaryPicture.setVideoTimestamp(timestamp);
+                pictures.add(videoBinaryPicture);
+                count += FRAME_NO;
+                //删除临时文件
+                outputFile.delete();
+            }
+        }
+        //删除临时文件
+        File tmpFile = new File(filePath);
+        tmpFile.delete();
+        //批量添加视频剪影文件
+        videoMapper.batchAddVideoBinaryPictures(pictures);
+        return pictures;
+    }
 }

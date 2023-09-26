@@ -3,6 +3,7 @@ package com.grazy.utils;
 import com.github.tobato.fastdfs.domain.fdfs.FileInfo;
 import com.github.tobato.fastdfs.domain.fdfs.MetaData;
 import com.github.tobato.fastdfs.domain.fdfs.StorePath;
+import com.github.tobato.fastdfs.domain.proto.storage.DownloadCallback;
 import com.github.tobato.fastdfs.service.AppendFileStorageClient;
 import com.github.tobato.fastdfs.service.FastFileStorageClient;
 import com.grazy.Exception.CustomException;
@@ -75,6 +76,12 @@ public class FastDFSUtil {
         return storePath.getPath();
     }
 
+    public String uploadCommonFile(File file, String fileType) throws Exception {
+        Set<MetaData> metaDataSet = new HashSet<>();
+        StorePath storePath = fastFileStorageClient.uploadFile(new FileInputStream(file),
+                file.length(), fileType, metaDataSet);
+        return storePath.getPath();
+    }
 
     /**
      * 上传可以断点续传的文件
@@ -272,6 +279,31 @@ public class FastDFSUtil {
         response.setStatus(HttpServletResponse.SC_PARTIAL_CONTENT);
         //调用http工具类进行访问视频
         HttpUtil.get(url,headers,response);
+    }
+
+
+    /**
+     * 下载文件
+     * @param url 文件下载地址
+     * @param localPath 文件存储地址
+     */
+    public void downLoadFile(String url, String localPath) {
+        fastFileStorageClient.downloadFile(DEFAULT_GROUP, url,
+                new DownloadCallback<String>() {
+                    @Override
+                    public String recv(InputStream ins) throws IOException {
+                        File file = new File(localPath);
+                        OutputStream os = new FileOutputStream(file);
+                        int len = 0;
+                        byte[] buffer = new byte[1024];
+                        while ((len = ins.read(buffer)) != -1) {
+                            os.write(buffer, 0, len);
+                        }
+                        os.close();
+                        ins.close();
+                        return "success";
+                    }
+                });
     }
 
 }

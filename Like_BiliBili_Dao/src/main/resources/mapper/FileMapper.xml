@@ -27,4 +27,15 @@
                     #{createTime}
                 )
     </insert>
+
+
+    <select id="getFileByMD5" parameterType="java.lang.String" resultType="com.grazy.domain.MyFile">
+        select
+            *
+        from
+            t_file
+        where
+            md5 = #{md5}
+    </select>
+
 </mapper>

@@ -25,4 +25,7 @@ public interface FileMapper {
      * @param newFileData 新文件信息
      */
     void insertFileData(MyFile newFileData);
+
+
+    MyFile getFileByMD5(String fileMd5);
 }

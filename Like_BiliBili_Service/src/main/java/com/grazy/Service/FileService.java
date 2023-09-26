@@ -1,5 +1,6 @@
 package com.grazy.Service;
 
+import com.grazy.domain.MyFile;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -30,4 +31,12 @@ public interface FileService {
      * @return 加密字符串
      */
     String getFileMD5(MultipartFile file) throws IOException;
+
+
+    /**
+     * 根据MD5获取文件
+     * @param fileMd5 文件的MD5加密
+     * @return 文件
+     */
+    public MyFile getFileByMd5(String fileMd5);
 }

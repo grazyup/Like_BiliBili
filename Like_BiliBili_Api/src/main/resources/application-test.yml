@@ -52,3 +52,13 @@ fdfs:
 #ElasticSearch
 elasticsearch:
   url: 192.168.195.100:9200
+
+
+baidu:
+  develop:
+    clientId: sbjRmx1aqUBE1FRicpKfh4M1
+    clientSecret: 7T6E3sajEAqkA38klRVGaXusNYB0QbZC
+    auth:
+      url: https://aip.baidubce.com/oauth/2.0/token
+    splitBody:
+      url: https://aip.baidubce.com/rest/2.0/image-classify/v1/body_seg

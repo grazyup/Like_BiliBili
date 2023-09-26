@@ -52,4 +52,10 @@ public class FileServiceImpl implements FileService {
     public String getFileMD5(MultipartFile file) throws IOException {
         return MD5Util.getFileMD5(file);
     }
+
+
+    @Override
+    public MyFile getFileByMd5(String fileMd5) {
+        return fileMapper.getFileByMD5(fileMd5);
+    }
 }

@@ -307,4 +307,26 @@
             </foreach>
     </select>
 
+
+    <insert id="batchAddVideoBinaryPictures" parameterType="java.util.List">
+        insert into
+        t_video_binary_picture(
+        videoId,
+        frameNo,
+        url,
+        videoTimestamp,
+        createTime
+        )
+        values
+        <foreach collection="pictureList" item="picture" separator=",">
+            (
+            #{picture.videoId},
+            #{picture.frameNo},
+            #{picture.url},
+            #{picture.videoTimestamp},
+            #{picture.createTime}
+            )
+        </foreach>
+    </insert>
+
 </mapper>
